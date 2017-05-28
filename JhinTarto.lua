@@ -6,7 +6,7 @@ local _shadow = myHero.pos
 
 function Jhin:__init()
     if myHero.charName ~= "Jhin" then return end
-    PrintChat("JhinTarto Initiated")
+    PrintChat("JhinTarto Loaded.")
     self:LoadSpells()
     self:LoadMenu()
     Callback.Add("Tick", function() self:Tick() end)
