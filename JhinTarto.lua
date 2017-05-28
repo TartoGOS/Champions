@@ -4,7 +4,7 @@ require('DamageLib')
 
 local _shadow = myHero.pos
 
-function AlqoholicSkeleton:__init()
+function Jhin:__init()
     if myHero.charName ~= "Jhin" then return end
     PrintChat("JhinTarto Initiated")
     self:LoadSpells()
