@@ -1,4 +1,17 @@
-if myHero.charName ~= "Jhin" then return end
+class "Jhin"
+
+require('DamageLib')
+
+local _shadow = myHero.pos
+
+function AlqoholicSkeleton:__init()
+    if myHero.charName ~= "Jhin" then return end
+    PrintChat("JhinTarto Initiated")
+    self:LoadSpells()
+    self:LoadMenu()
+    Callback.Add("Tick", function() self:Tick() end)
+    Callback.Add("Draw", function() self:Draw() end)
+end
 
 -- Load Spells
 function Jhin:LoadSpells()
