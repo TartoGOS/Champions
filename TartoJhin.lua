@@ -63,7 +63,7 @@ function TartoJhin:LoadMenu()
 -- Misc Sub-Menu
 	TartoJhin.Menu.Misc:MenuElement({id = "AutoW", name = "[SOON]Auto Use W on CC", value = false, leftIcon = TartoJhin.SpellIcons.W})
 	TartoJhin.Menu.Misc:MenuElement({id = "WMiscMana", name = "W Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.W})
-	TartoJhin.Menu.Misc:MenuElement({id = "AutoE", name = "Auto Use E on CC", value = false, leftIcon = TartoJhin.SpellIcons.E})
+	TartoJhin.Menu.Misc:MenuElement({id = "AutoE", name = "[SOON]Auto Use E on CC", value = false, leftIcon = TartoJhin.SpellIcons.E})
 	TartoJhin.Menu.Misc:MenuElement({id = "EMiscMana", name = "E Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.E})
 -- Draw Sub-Menu
 	TartoJhin.Menu.Draw:MenuElement({id = "DrawReady", name = "Draw Only Ready Spells [?]", value = false})
@@ -214,7 +214,33 @@ function TartoJhin:LaneClear()
 end
 
 function TartoJhin:Harass()
-	-- HARASS A FAIRE
+	if _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL) == nil then return end
+
+	if TartoJhin.Menu.Harass.UseW:Value() and TartoJhin:IsReady(_W) then
+		local target = _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if target == nil then return end
+		if TartoJhin:HasBuff(target, "jhinespotteddebuff") then 
+			local prediction = target:GetPrediction(5000, 0.75)
+			Control.CastSpell(HK_W, prediction)
+		end
+	else
+		if TartoJhin.Menu.Harass.UseQ:Value() and TartoJhin:IsReady(_Q) then
+			local target = _G.SDK.TargetSelector:GetTarget(600, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+			if TartoJhin:HasBuff(myHero, "jhinpassiveattackbuff") then return end
+			if target == nil then return end
+			local prediction = target:GetPrediction(1800, 0)
+			Control.CastSpell(HK_Q, prediction)
+		end
+	end
+	if TartoJhin.Menu.Harass.UseQ:Value() and TartoJhin:IsReady(_Q) then
+		local target = _G.SDK.TargetSelector:GetTarget(600, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if TartoJhin:HasBuff(myHero, "jhinpassiveattackbuff") then return end
+		if target == nil then return end
+		if not TartoJhin:HasBuff(target, "jhinespotteddebuff") then
+			local prediction = target:GetPrediction(1800, 0)
+			Control.CastSpell(HK_Q, prediction)
+		end
+	end
 end
 
 function TartoJhin:LastHit()
