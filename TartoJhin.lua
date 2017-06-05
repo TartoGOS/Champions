@@ -7,6 +7,7 @@ require '2DGeometry'
 require 'Collision'
 
 local WCollision = Collision:SetSpell(3000, 5000, 0, 40, true)
+local RCollision = Collision:SetSpell(3400, 828.5, 0, 0, true)
 
 function TartoJhin:__init()
     PrintChat("TartoJhin Loaded.")
@@ -267,6 +268,7 @@ function TartoJhin:UltimateAimbot()
 			local target = _G.SDK.TargetSelector:GetTarget(3400, _G.SDK.DAMAGE_TYPE_PHYSICAL)
 			if target == nil then return end
 			local prediction = target:GetPrediction(828.5, 0)
+			if RCollision:__GetHeroCollision(myHero, target, 3, target) then return end
 			Control.CastSpell(HK_R, prediction)
 		end
 	end
