@@ -212,7 +212,7 @@ function TartoJhin:Combo()
 	end
 	if not TartoJhin:IsReady(_Q) and not TartoJhin:IsReady(_W) then
 
-		if TartoJhin:ETick() and TartoJhin.Menu.Combo.UseE:Value() and TartoJhin.Menu.Combo.EComboMana:Value() < (100*myHero.mana/myHero.maxMana) and TartoJhin:IsReady(_E) and myHero:GetSpellData(_E).ammo ~= 0 then
+		if --[[TartoJhin:ETick() and]] TartoJhin.Menu.Combo.UseE:Value() and TartoJhin.Menu.Combo.EComboMana:Value() < (100*myHero.mana/myHero.maxMana) and TartoJhin:IsReady(_E) and myHero:GetSpellData(_E).ammo ~= 0 then
 			local target = _G.SDK.TargetSelector:GetTarget(750, _G.SDK.DAMAGE_TYPE_PHYSICAL)
 			if TartoJhin:HasBuff(myHero, "jhinpassiveattackbuff") then return end
 			if target == nil then return end
@@ -261,7 +261,7 @@ function TartoJhin:LastHit()
 	-- LASTHIT A FAIRE
 end
 
-local Tick = GetTickCount()
+--[[local Tick = GetTickCount()
 
 function TartoJhin:ETick()
 	local ETick = GetTickCount()
@@ -272,7 +272,7 @@ function TartoJhin:ETick()
 		return false
 	end
 
-end
+end]]
 
 function TartoJhin:UltimateAimbot()
 	if myHero:GetSpellData(_R).name == "JhinR" and TartoJhin:IsReady(_R) and TartoJhin.Menu.UltimateR.ForceR:Value() then
