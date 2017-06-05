@@ -49,11 +49,11 @@ function TartoJhin:LoadMenu()
 	TartoJhin.Menu.Combo:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = TartoJhin.SpellIcons.E})
 	TartoJhin.Menu.Combo:MenuElement({id = "EComboMana", name = "E Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.E})
 -- LaneClear Sub-Menu
-	TartoJhin.Menu.LaneClear:MenuElement({id = "UseQ", name = "Use Q", value = false, leftIcon = TartoJhin.SpellIcons.Q})
+	TartoJhin.Menu.LaneClear:MenuElement({id = "UseQ", name = "[SOON]Use Q", value = false, leftIcon = TartoJhin.SpellIcons.Q})
 	TartoJhin.Menu.LaneClear:MenuElement({id = "QLaneclearMana", name = "Q Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.Q})
-	TartoJhin.Menu.LaneClear:MenuElement({id = "UseW", name = "Use W", value = false, leftIcon = TartoJhin.SpellIcons.W})
+	TartoJhin.Menu.LaneClear:MenuElement({id = "UseW", name = "[SOON]Use W", value = false, leftIcon = TartoJhin.SpellIcons.W})
 	TartoJhin.Menu.LaneClear:MenuElement({id = "WLaneclearMana", name = "W Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.W})
-	TartoJhin.Menu.LaneClear:MenuElement({id = "UseE", name = "Use E", value = false, leftIcon = TartoJhin.SpellIcons.E})
+	TartoJhin.Menu.LaneClear:MenuElement({id = "UseE", name = "[SOON]Use E", value = false, leftIcon = TartoJhin.SpellIcons.E})
 	TartoJhin.Menu.LaneClear:MenuElement({id = "ELaneclearMana", name = "E Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.E})
 -- Harass Sub-Menu
 	TartoJhin.Menu.Harass:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = TartoJhin.SpellIcons.Q})
@@ -61,7 +61,7 @@ function TartoJhin:LoadMenu()
 	TartoJhin.Menu.Harass:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = TartoJhin.SpellIcons.W})
 	TartoJhin.Menu.Harass:MenuElement({id = "WComboMana", name = "W Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.W})
 -- LastHit Sub-Menu
-	TartoJhin.Menu.LastHit:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = TartoJhin.SpellIcons.Q})
+	TartoJhin.Menu.LastHit:MenuElement({id = "UseQ", name = "[SOON]Use Q", value = true, leftIcon = TartoJhin.SpellIcons.Q})
 -- UltimateR Sub-Menu
 	TartoJhin.Menu.UltimateR:MenuElement({id = "NoMove", name = "[SOON]Don't move while R", value = true})
 	TartoJhin.Menu.UltimateR:MenuElement({id = "ForceR", name = "Press to Force Ultimate", key = string.byte("T"), leftIcon = TartoJhin.SpellIcons.R})
@@ -211,15 +211,13 @@ function TartoJhin:Combo()
 		end
 	end
 	if not TartoJhin:IsReady(_Q) and not TartoJhin:IsReady(_W) then
-		--if ENewTick == nil then ENewTick = 0 end
-		--if (ENewTick - ETick) < 450 then return end
-		if TartoJhin.Menu.Combo.UseE:Value() and TartoJhin.Menu.Combo.EComboMana:Value() < (100*myHero.mana/myHero.maxMana) and TartoJhin:IsReady(_E) and myHero:GetSpellData(_E).ammo ~= 0 then
+
+		if TartoJhin:ETick() and TartoJhin.Menu.Combo.UseE:Value() and TartoJhin.Menu.Combo.EComboMana:Value() < (100*myHero.mana/myHero.maxMana) and TartoJhin:IsReady(_E) and myHero:GetSpellData(_E).ammo ~= 0 then
 			local target = _G.SDK.TargetSelector:GetTarget(750, _G.SDK.DAMAGE_TYPE_PHYSICAL)
 			if TartoJhin:HasBuff(myHero, "jhinpassiveattackbuff") then return end
 			if target == nil then return end
 			local prediction = target:GetPrediction(1600, 0.85)
 			Control.CastSpell(HK_E, prediction)
-			--ENewTick = GetTickCount()
 		end
 	end
 end
@@ -261,6 +259,19 @@ end
 
 function TartoJhin:LastHit()
 	-- LASTHIT A FAIRE
+end
+
+local Tick = GetTickCount()
+
+function TartoJhin:ETick()
+	local ETick = GetTickCount()
+	if ETick - Tick > 450 then
+		Tick = GetTickCount()
+		return true
+	else
+		return false
+	end
+
 end
 
 function TartoJhin:UltimateAimbot()
