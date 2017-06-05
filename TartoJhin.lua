@@ -6,6 +6,7 @@ require 'DamageLib'
 require '2DGeometry'
 require 'Collision'
 
+
 local WCollision = Collision:SetSpell(3000, 5000, 0, 40, true)
 local RCollision = Collision:SetSpell(3400, 828.5, 0, 0, true)
 
@@ -80,6 +81,10 @@ function TartoJhin:LoadMenu()
 	--TartoJhin.Menu.Key:MenuElement({id = "Harass", name = "Harass", key = string.byte("C")})
 	--TartoJhin.Menu.Key:MenuElement({id = "LaneClear", name = "LaneClear", key = string.byte("V")})
 	--TartoJhin.Menu.Key:MenuElement({id = "LastHit", name = "LastHit", key = string.byte("X")})
+	-- Infos
+	TartoJhin.Menu:MenuElement({name = "Version : 1.0", type = SPACE})
+	TartoJhin.Menu:MenuElement({name = "Patch   : 7.11", type = SPACE})
+	TartoJhin.Menu:MenuElement({name = "by Tarto", type = SPACE})
 end
 
 function TartoJhin:Tick()

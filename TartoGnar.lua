@@ -2,8 +2,6 @@ if myHero.charName ~= "Gnar" then return end
 
 class "TartoGnar"
 
-local Version = "1.0b"
-
 require 'DamageLib'
 require '2DGeometry'
 require 'Collision'
@@ -61,6 +59,10 @@ function TartoGnar:LoadMenu()
 	TartoGnar.Menu.Killsteal:MenuElement({id = "StealQ", name = "Killsteal Q", value = true, leftIcon = "https://puu.sh/w7aOp/f57d73b4c0.png"})
 	TartoGnar.Menu.Killsteal:MenuElement({id = "StealQM", name = "Killsteal Q MEGA", value = false, leftIcon = "https://puu.sh/w7aQP/c2ab4c230c.png"})
 	TartoGnar.Menu.Killsteal:MenuElement({id = "StealR", name = "Killsteal R", value = false, leftIcon = "https://puu.sh/w7aYn/a4ac942f9c.png"})
+-- Infos
+	TartoGnar.Menu:MenuElement({name = "Version : 1.0", type = SPACE})
+	TartoGnar.Menu:MenuElement({name = "Patch   : 7.11", type = SPACE})
+	TartoGnar.Menu:MenuElement({name = "by Tarto", type = SPACE})
 
 	PrintChat("GnarTarto Menu Loaded.")
 end
@@ -175,15 +177,16 @@ function TartoGnar:Harass()
 end
 
 function TartoGnar:LaneClear()
-	--[[if TartoGnar:GetValidMinion(Q.range - 100) == false then return end
+	--[[local GetValidMinion = GetValidMinion(Q.range)
 
-	for i, target in pairs(_G.SDK.ObjectManager:GetEnemyMinions(Q.range - 100)) do
-		local target = Game.Minion(i)
-		if target.alive and TartoGnar.Menu.LaneClear.UseQ:Value() and TartoGnar:IsReady(_Q) then
-			--local prediction = target:GetPrediction(Q.speed, Q.delay)
-			Control.CastSpell(HK_Q, target.pos)
+	for i = 1, #GetValidMinion do
+		local minion = GetValidMinion[i]
+		if TartoGnar.Menu.Laneclear.UseQ:Value() and TartoGnar:IsReady(_Q) then
+			local prediction = minion:GetPrediction(Q.speed, Q.delay)
+			Control.CastSpell(HK_Q, prediction)
 		end
 	end]]
+
 	--[[A FAIRE :
 	-Laneclear Q le plus de creeps possibles
 	-Laneclear QM le plus de creeps possibles
@@ -266,13 +269,14 @@ function TartoGnar:ValidTarget(target)
 end
 
 function TartoGnar:GetValidMinion(range)
-    	for i = 1,Game.MinionCount() do
-        	local minion = Game.Minion(i)
-       		if  minion.team ~= myHero.team and minion.valid and minion.pos:DistanceTo(myHero.pos) < 650 then
-        		return true
-        	end
-    	end
-    	return false
+	EnemyMinions = {}
+    for i = 1, Game.MinionCount() do
+        local Minion = Game.Minion(i)
+       	if  Minion.IsEnemy and (Minion:DistanceTo(myHero) < range) then
+       		table.insert(EnemyMinions, Minion)
+       		return EnemyMinions
+       	end
+    end
 end
 
 function TartoGnar:AARange()
