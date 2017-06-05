@@ -2,27 +2,30 @@ if myHero.charName ~= "Jhin" then return end
 
 class "TartoJhin"
 
-require('DamageLib')
+require 'DamageLib'
+require '2DGeometry'
+require 'Collision'
+
+local WCollision = Collision:SetSpell(3000, 5000, 0, 40, true)
 
 function TartoJhin:__init()
     PrintChat("TartoJhin Loaded.")
-    PrintChat(myHero:GetSpellData(_W).width)
     TartoJhin.SpellIcons = {Q = "https://puu.sh/w4zpp/8bd45baf09.png",
 						W = "https://puu.sh/w4zrj/365ef7cc83.png",
 						E = "https://puu.sh/w4ztd/ebfeb7fe38.png",
 						R = "https://puu.sh/w4zut/d128a4c4dd.png"}
-    TartoJhin:LoadSpells()
-    TartoJhin:LoadMenu()
+    self:LoadSpells()
+    self:LoadMenu()
     Callback.Add("Tick", function() TartoJhin.Tick() end)
     Callback.Add("Draw", function() TartoJhin.Draw() end)
 end
 
 -- Load Spells
 function TartoJhin:LoadSpells()
-	Q = {Range = myHero:GetSpellData(_Q).range, Delay = myHero:GetSpellData(_Q).delay, speed = myHero:GetSpellData(_Q).speed, width = myHero:GetSpellData(_Q).width}
-	W = {Range = myHero:GetSpellData(_W).range, Delay = myHero:GetSpellData(_W).delay, speed = myHero:GetSpellData(_W).speed, width = myHero:GetSpellData(_W).width}
-	E = {Range = myHero:GetSpellData(_E).range, Delay = myHero:GetSpellData(_E).delay, speed = myHero:GetSpellData(_E).speed, width = myHero:GetSpellData(_E).width}
-	R = {Range = myHero:GetSpellData(_R).range, Delay = myHero:GetSpellData(_R).delay, speed = myHero:GetSpellData(_R).speed, width = myHero:GetSpellData(_R).width}
+	Q = {range = 550, delay = 0, speed = 1800, width = 80}
+	W = {range = 3000, delay = 0, speed = 5000, width = 40}
+	E = {range = 750, delay = 0, speed = 1000, width = 120}	
+	R = {range = 3400, delay = 0, speed = 828.5, width = 0}
 end
 
 
@@ -173,11 +176,14 @@ end
 function TartoJhin:Combo()
 	if _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL) == nil then return end
 
+	--local ETick = GetTickCount()
+
 	if TartoJhin.Menu.Combo.UseW:Value() and TartoJhin:IsReady(_W) then
 		local target = _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL)
 		if target == nil then return end
 		if TartoJhin:HasBuff(target, "jhinespotteddebuff") then 
 			local prediction = target:GetPrediction(5000, 0.75)
+			if WCollision:__GetHeroCollision(myHero, target, 3, target) then return end
 			Control.CastSpell(HK_W, prediction)
 		end
 	else
@@ -199,12 +205,15 @@ function TartoJhin:Combo()
 		end
 	end
 	if not TartoJhin:IsReady(_Q) and not TartoJhin:IsReady(_W) then
-		if TartoJhin.Menu.Combo.UseE:Value() and TartoJhin.Menu.Combo.EComboMana:Value() < (100*myHero.mana/myHero.maxMana) and TartoJhin:IsReady(_E) then
+		--if ENewTick == nil then ENewTick = 0 end
+		--if (ENewTick - ETick) < 450 then return end
+		if TartoJhin.Menu.Combo.UseE:Value() and TartoJhin.Menu.Combo.EComboMana:Value() < (100*myHero.mana/myHero.maxMana) and TartoJhin:IsReady(_E) and myHero:GetSpellData(_E).ammo ~= 0 then
 			local target = _G.SDK.TargetSelector:GetTarget(750, _G.SDK.DAMAGE_TYPE_PHYSICAL)
 			if TartoJhin:HasBuff(myHero, "jhinpassiveattackbuff") then return end
 			if target == nil then return end
 			local prediction = target:GetPrediction(1600, 0.85)
-			Control.CastSpell(HK_E, prediction)			
+			Control.CastSpell(HK_E, prediction)
+			--ENewTick = GetTickCount()
 		end
 	end
 end
@@ -221,6 +230,7 @@ function TartoJhin:Harass()
 		if target == nil then return end
 		if TartoJhin:HasBuff(target, "jhinespotteddebuff") then 
 			local prediction = target:GetPrediction(5000, 0.75)
+			if WCollision:__GetHeroCollision(myHero, target, 3, target) then return end
 			Control.CastSpell(HK_W, prediction)
 		end
 	else
@@ -248,6 +258,10 @@ function TartoJhin:LastHit()
 end
 
 function TartoJhin:UltimateAimbot()
+	if myHero:GetSpellData(_R).name == "JhinR" and TartoJhin:IsReady(_R) and TartoJhin.Menu.UltimateR.ForceR:Value() then
+		local target = _G.SDK.TargetSelector:GetTarget(2500, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		Control.CastSpell(HK_R, target) return
+	end
 	if myHero:GetSpellData(_R).name == "JhinRShot" then
 		if TartoJhin.Menu.UltimateR.ForceR:Value() then
 			local target = _G.SDK.TargetSelector:GetTarget(3400, _G.SDK.DAMAGE_TYPE_PHYSICAL)
@@ -266,6 +280,7 @@ function TartoJhin:StealableTarget()
 		if target == nil then return end
 		if (target.health + target.shieldAD + target.shieldAP) < getdmg("W", target, myHero) and target.distance >= (myHero.range + 250) then 
 			local prediction = target:GetPrediction(5000, 0.75)
+			if WCollision:__GetHeroCollision(myHero, target, 3, target) then return end
 			Control.CastSpell(HK_W, prediction)
 		end
 	end
@@ -279,6 +294,7 @@ function TartoJhin:AutoW()
 		if target == nil then return end
 		if TartoJhin:HasBuff(target, "jhinespotteddebuff") then 
 			local prediction = target:GetPrediction(5000, 0.75)
+			if WCollision:__GetHeroCollision(myHero, target, 3, target) then return end
 			Control.CastSpell(HK_W, prediction)
 		end
 	end
