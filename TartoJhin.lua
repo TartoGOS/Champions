@@ -55,7 +55,7 @@ function TartoJhin:LoadMenu()
 	TartoJhin.Menu.LastHit:MenuElement({id = "UseQ", name = "[SOON]Use Q", value = true, leftIcon = "https://puu.sh/w4zpp/8bd45baf09.png"})
 -- UltimateR Sub-Menu
 	TartoJhin.Menu.UltimateR:MenuElement({id = "NoMove", name = "[SOON]Don't move while R", value = true})
-	TartoJhin.Menu.UltimateR:MenuElement({id = "ForceR", name = "Press to Force Ultimate", key = string.byte("T"), leftIcon = "https://puu.sh/w4zut/d128a4c4dd.png"})
+	TartoJhin.Menu.UltimateR:MenuElement({id = "ForceR", name = "Press to Force Ultimate", key = string.byte("Y"), leftIcon = "https://puu.sh/w4zut/d128a4c4dd.png"})
 -- Misc Sub-Menu
 	TartoJhin.Menu.Misc:MenuElement({id = "AutoW", name = "Auto Use W on CC", value = false, leftIcon = "https://puu.sh/w4zrj/365ef7cc83.png"})
 	TartoJhin.Menu.Misc:MenuElement({id = "WMiscMana", name = "W Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://puu.sh/w4zrj/365ef7cc83.png"})
