@@ -1,23 +1,14 @@
 if myHero.charName ~= "Jhin" then return end
 
-class "TartoJhin"
-
 require 'DamageLib'
-require '2DGeometry'
-require 'Collision'
+require 'Eternal Prediction'
 
-
-local WCollision = Collision:SetSpell(3000, 5000, 0, 40, true)
-local RCollision = Collision:SetSpell(3400, 828.5, 0, 0, true)
+class "TartoJhin"
 
 function TartoJhin:__init()
     PrintChat("TartoJhin Loaded.")
-    TartoJhin.SpellIcons = {Q = "https://puu.sh/w4zpp/8bd45baf09.png",
-						W = "https://puu.sh/w4zrj/365ef7cc83.png",
-						E = "https://puu.sh/w4ztd/ebfeb7fe38.png",
-						R = "https://puu.sh/w4zut/d128a4c4dd.png"}
-    self:LoadSpells()
-    self:LoadMenu()
+    TartoJhin:LoadSpells()
+    TartoJhin:LoadMenu()
     Callback.Add("Tick", function() TartoJhin.Tick() end)
     Callback.Add("Draw", function() TartoJhin.Draw() end)
 end
@@ -25,9 +16,9 @@ end
 -- Load Spells
 function TartoJhin:LoadSpells()
 	Q = {range = 550, delay = 0, speed = 1800, width = 80}
-	W = {range = 3000, delay = 0, speed = 5000, width = 40}
-	E = {range = 750, delay = 0, speed = 1000, width = 120}	
-	R = {range = 3400, delay = 0, speed = 828.5, width = 0}
+	W = {range = 2550, delay = 0.75, speed = 5000, width = 40}
+	E = {range = 750, delay = 0.85, speed = 1600, width = 150}	
+	R = {range = 3500, delay = 0.25, speed = 5000, width = 80}
 end
 
 
@@ -43,64 +34,90 @@ function TartoJhin:LoadMenu()
 	TartoJhin.Menu:MenuElement({id = "Draw", name = "Drawings", type = MENU})
 	--TartoJhin.Menu:MenuElement({id = "Key", name = "Key Settings", type = MENU})
 -- Combo Sub-Menu
-	TartoJhin.Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = TartoJhin.SpellIcons.Q})
-	TartoJhin.Menu.Combo:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = TartoJhin.SpellIcons.W})
-	TartoJhin.Menu.Combo:MenuElement({id = "UseWKillsteal", name = "Use W Killsteal", value = true, leftIcon = TartoJhin.SpellIcons.W})
-	TartoJhin.Menu.Combo:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = TartoJhin.SpellIcons.E})
-	TartoJhin.Menu.Combo:MenuElement({id = "EComboMana", name = "E Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.E})
+	TartoJhin.Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = "https://puu.sh/w4zpp/8bd45baf09.png"})
+	TartoJhin.Menu.Combo:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = "https://puu.sh/w4zrj/365ef7cc83.png"})
+	TartoJhin.Menu.Combo:MenuElement({id = "UseWKillsteal", name = "Use W Killsteal", value = true, leftIcon = "https://puu.sh/w4zrj/365ef7cc83.png"})
+	TartoJhin.Menu.Combo:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = "https://puu.sh/w4ztd/ebfeb7fe38.png"})
+	TartoJhin.Menu.Combo:MenuElement({id = "EComboMana", name = "E Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://puu.sh/w4ztd/ebfeb7fe38.png"})
 -- LaneClear Sub-Menu
-	TartoJhin.Menu.LaneClear:MenuElement({id = "UseQ", name = "[SOON]Use Q", value = false, leftIcon = TartoJhin.SpellIcons.Q})
-	TartoJhin.Menu.LaneClear:MenuElement({id = "QLaneclearMana", name = "Q Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.Q})
-	TartoJhin.Menu.LaneClear:MenuElement({id = "UseW", name = "[SOON]Use W", value = false, leftIcon = TartoJhin.SpellIcons.W})
-	TartoJhin.Menu.LaneClear:MenuElement({id = "WLaneclearMana", name = "W Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.W})
-	TartoJhin.Menu.LaneClear:MenuElement({id = "UseE", name = "[SOON]Use E", value = false, leftIcon = TartoJhin.SpellIcons.E})
-	TartoJhin.Menu.LaneClear:MenuElement({id = "ELaneclearMana", name = "E Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.E})
+	TartoJhin.Menu.LaneClear:MenuElement({id = "UseQ", name = "[SOON]Use Q", value = false, leftIcon = "https://puu.sh/w4zpp/8bd45baf09.png"})
+	TartoJhin.Menu.LaneClear:MenuElement({id = "QLaneclearMana", name = "Q Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://puu.sh/w4zpp/8bd45baf09.png"})
+	TartoJhin.Menu.LaneClear:MenuElement({id = "UseW", name = "[SOON]Use W", value = false, leftIcon = "https://puu.sh/w4zrj/365ef7cc83.png"})
+	TartoJhin.Menu.LaneClear:MenuElement({id = "WLaneclearMana", name = "W Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://puu.sh/w4zrj/365ef7cc83.png"})
+	TartoJhin.Menu.LaneClear:MenuElement({id = "UseE", name = "[SOON]Use E", value = false, leftIcon = "https://puu.sh/w4ztd/ebfeb7fe38.png"})
+	TartoJhin.Menu.LaneClear:MenuElement({id = "ELaneclearMana", name = "E Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://puu.sh/w4ztd/ebfeb7fe38.png"})
 -- Harass Sub-Menu
-	TartoJhin.Menu.Harass:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = TartoJhin.SpellIcons.Q})
-	TartoJhin.Menu.Harass:MenuElement({id = "QHarassMana", name = "Q Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.Q})
-	TartoJhin.Menu.Harass:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = TartoJhin.SpellIcons.W})
-	TartoJhin.Menu.Harass:MenuElement({id = "WComboMana", name = "W Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.W})
+	TartoJhin.Menu.Harass:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = "https://puu.sh/w4zpp/8bd45baf09.png"})
+	TartoJhin.Menu.Harass:MenuElement({id = "QHarassMana", name = "Q Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://puu.sh/w4zpp/8bd45baf09.png"})
+	TartoJhin.Menu.Harass:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = "https://puu.sh/w4zrj/365ef7cc83.png"})
+	TartoJhin.Menu.Harass:MenuElement({id = "WComboMana", name = "W Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://puu.sh/w4zrj/365ef7cc83.png"})
 -- LastHit Sub-Menu
-	TartoJhin.Menu.LastHit:MenuElement({id = "UseQ", name = "[SOON]Use Q", value = true, leftIcon = TartoJhin.SpellIcons.Q})
+	TartoJhin.Menu.LastHit:MenuElement({id = "UseQ", name = "[SOON]Use Q", value = true, leftIcon = "https://puu.sh/w4zpp/8bd45baf09.png"})
 -- UltimateR Sub-Menu
 	TartoJhin.Menu.UltimateR:MenuElement({id = "NoMove", name = "[SOON]Don't move while R", value = true})
-	TartoJhin.Menu.UltimateR:MenuElement({id = "ForceR", name = "Press to Force Ultimate", key = string.byte("T"), leftIcon = TartoJhin.SpellIcons.R})
+	TartoJhin.Menu.UltimateR:MenuElement({id = "ForceR", name = "Press to Force Ultimate", key = string.byte("T"), leftIcon = "https://puu.sh/w4zut/d128a4c4dd.png"})
 -- Misc Sub-Menu
-	TartoJhin.Menu.Misc:MenuElement({id = "AutoW", name = "[SOON]Auto Use W on CC", value = false, leftIcon = TartoJhin.SpellIcons.W})
-	TartoJhin.Menu.Misc:MenuElement({id = "WMiscMana", name = "W Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.W})
-	TartoJhin.Menu.Misc:MenuElement({id = "AutoE", name = "[SOON]Auto Use E on CC", value = false, leftIcon = TartoJhin.SpellIcons.E})
-	TartoJhin.Menu.Misc:MenuElement({id = "EMiscMana", name = "E Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = TartoJhin.SpellIcons.E})
+	TartoJhin.Menu.Misc:MenuElement({id = "AutoW", name = "Auto Use W on CC", value = false, leftIcon = "https://puu.sh/w4zrj/365ef7cc83.png"})
+	TartoJhin.Menu.Misc:MenuElement({id = "WMiscMana", name = "W Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://puu.sh/w4zrj/365ef7cc83.png"})
 -- Draw Sub-Menu
 	TartoJhin.Menu.Draw:MenuElement({id = "DrawReady", name = "Draw Only Ready Spells [?]", value = false})
-	TartoJhin.Menu.Draw:MenuElement({id = "DrawQ", name = "Draw Q Range", value = false, leftIcon = TartoJhin.SpellIcons.Q})
-	TartoJhin.Menu.Draw:MenuElement({id = "DrawW", name = "Draw W Range", value = true, leftIcon = TartoJhin.SpellIcons.W})
-	TartoJhin.Menu.Draw:MenuElement({id = "DrawE", name = "Draw E Range", value = false, leftIcon = TartoJhin.SpellIcons.E})
-	TartoJhin.Menu.Draw:MenuElement({id = "DrawR", name = "Draw R Range", value = false, leftIcon = TartoJhin.SpellIcons.R})
+	TartoJhin.Menu.Draw:MenuElement({id = "DrawQ", name = "Draw Q Range", value = false, leftIcon = "https://puu.sh/w4zpp/8bd45baf09.png"})
+	TartoJhin.Menu.Draw:MenuElement({id = "DrawW", name = "Draw W Range", value = true, leftIcon = "https://puu.sh/w4zrj/365ef7cc83.png"})
+	TartoJhin.Menu.Draw:MenuElement({id = "DrawE", name = "Draw E Range", value = false, leftIcon = "https://puu.sh/w4ztd/ebfeb7fe38.png"})
+	TartoJhin.Menu.Draw:MenuElement({id = "DrawR", name = "Draw R Range", value = false, leftIcon = "https://puu.sh/w4zut/d128a4c4dd.png"})
 -- Key Sub-Menu
 	--TartoJhin.Menu.Key:MenuElement({id = "Combo", name = "Combo", key = string.byte("32")})
 	--TartoJhin.Menu.Key:MenuElement({id = "Harass", name = "Harass", key = string.byte("C")})
 	--TartoJhin.Menu.Key:MenuElement({id = "LaneClear", name = "LaneClear", key = string.byte("V")})
 	--TartoJhin.Menu.Key:MenuElement({id = "LastHit", name = "LastHit", key = string.byte("X")})
 	-- Infos
-	TartoJhin.Menu:MenuElement({name = "Version : 1.0", type = SPACE})
+	TartoJhin.Menu:MenuElement({name = "Version : 1.2", type = SPACE})
 	TartoJhin.Menu:MenuElement({name = "Patch   : 7.11", type = SPACE})
 	TartoJhin.Menu:MenuElement({name = "by Tarto", type = SPACE})
 end
 
 function TartoJhin:Tick()
-	if not myHero.alive then return end
+	if myHero.dead then return end
 
 	TartoJhin:UltimateAimbot()
 	TartoJhin:StealableTarget()
+	TartoJhin:AutoW()
 
-	if _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_COMBO] then
+	if TartoJhin:GetMode() == "Combo" then
 		TartoJhin:Combo()
-	elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_HARASS] then
+	elseif TartoJhin:GetMode() == "Harass" then
 		TartoJhin:Harass()
-	elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_LANECLEAR] then
+	elseif TartoJhin:GetMode() == "Clear" then
 		TartoJhin:LaneClear()
-	elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_LASTHIT] then
-		TartoJhin:LastHit()
+	end
+end
+
+
+--From Weedle
+local intToMode = {
+   		[0] = "",
+   		[1] = "Combo",
+   		[2] = "Harass",
+   		[3] = "LastHit",
+   		[4] = "Clear"
+	}
+
+--From Weedle
+function TartoJhin:GetMode()
+	if _G.EOWLoaded then
+		return intToMode[EOW.CurrentMode]
+	elseif _G.SDK and _G.SDK.Orbwalker then
+		if _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_COMBO] then
+			return "Combo"
+		elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_HARASS] then
+			return "Harass"	
+		elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_LANECLEAR] or _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_JUNGLECLEAR] then
+			return "Clear"
+		elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_LASTHIT] then
+			return "LastHit"
+		end
+	else
+		return GOS.GetMode()
 	end
 end
 
@@ -110,29 +127,29 @@ function TartoJhin:Draw()
 
 	if TartoJhin.Menu.Draw.DrawReady:Value() then
 		if TartoJhin:IsReady(_Q) and TartoJhin.Menu.Draw.DrawQ:Value() then
-			Draw.Circle(myHero.pos, 600, 3, Draw.Color(255, 255, 255, 100))
+			Draw.Circle(myHero.pos, 600, 1, Draw.Color(255, 255, 255, 100))
 		end
 		if TartoJhin:IsReady(_W) and TartoJhin.Menu.Draw.DrawW:Value() then
             Draw.Circle(myHero.pos, 2550, 3, Draw.Color(255, 255, 255, 100))
         end
         if TartoJhin:IsReady(_E) and TartoJhin.Menu.Draw.DrawE:Value() then
-            Draw.Circle(myHero.pos, 750, 3, Draw.Color(255, 255, 255, 100))
+            Draw.Circle(myHero.pos, 750, 1, Draw.Color(255, 255, 255, 100))
         end
         if TartoJhin:IsReady(_R) and TartoJhin.Menu.Draw.DrawR:Value() then
-            Draw.Circle(myHero.pos, 3500, 3, Draw.Color(255, 255, 255, 100))
+            Draw.Circle(myHero.pos, 3500, 2, Draw.Color(255, 255, 255, 100))
         end
     else
     	if TartoJhin.Menu.Draw.DrawQ:Value() then
-            Draw.Circle(myHero.pos, 600, 3, Draw.Color(255, 255, 255, 100))
+            Draw.Circle(myHero.pos, 600, 1, Draw.Color(255, 255, 255, 100))
         end
         if TartoJhin.Menu.Draw.DrawW:Value() then
             Draw.Circle(myHero.pos, 2550, 3, Draw.Color(255, 255, 255, 100))
         end
         if TartoJhin.Menu.Draw.DrawE:Value() then
-            Draw.Circle(myHero.pos, 750, 3, Draw.Color(255, 255, 255, 100))
+            Draw.Circle(myHero.pos, 750, 1, Draw.Color(255, 255, 255, 100))
         end
         if TartoJhin.Menu.Draw.DrawR:Value() then
-            Draw.Circle(myHero.pos, 3500, 3, Draw.Color(255, 255, 255, 100))
+            Draw.Circle(myHero.pos, 3500, 2, Draw.Color(255, 255, 255, 100))
         end
     end
 end
@@ -176,49 +193,98 @@ function TartoJhin:ValidTarget(target)
 	end
 end
 
+function TartoJhin:GetTarget(range)
+	if _G.SDK and _G.SDK.Orbwalker then
+		local target = _G.SDK.TargetSelector:GetTarget(range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		return target
+	elseif _G.EOWLoaded then
+		local target = EOW:GetTarget(range, easykill_acd)
+		return target
+	elseif _G.GOS then
+		local target = GOS:GetTarget(range, "AD")
+		return target
+	else PrintChat("No TargetSelector Loaded ..?")
+	end
+end
+
+function TartoJhin:AllowMove(bool)
+	if _G.SDK and _G.SDK.Orbwalker then
+		_G.SDK.Orbwalker:SetMovement(bool)
+	elseif _G.Loaded then
+		EOW:SetMovements(bool)
+	else
+		GOS.BlockMovement = not bool
+	end
+end
+
+function TartoJhin:CastQ(target)
+	Control.CastSpell(HK_Q, target)
+end
+
+function TartoJhin:CastQReset(target)
+	if target == nil then return end
+	if _G.SDK and _G.SDK.Orbwalker then
+		_G.SDK.Orbwalker:OnPostAttack(TartoJhin:CastQ(target))
+	elseif _G.EOWLoaded then
+		EOW:AddCallback(EOW.AfterAttack, TartoJhin:CastQ(target))
+	else 
+		GOS:OnAttackComplete(TartoJhin:CastQ(target))
+	end
+end
 
 --Vrai début du script
 --jhinpassiveattackbuff
+
+local ETime = Game.Timer()
+
 function TartoJhin:Combo()
-	if _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL) == nil then return end
+	if TartoJhin:GetTarget(2550) == nil then return end
 
 	--local ETick = GetTickCount()
 
 	if TartoJhin.Menu.Combo.UseW:Value() and TartoJhin:IsReady(_W) then
-		local target = _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		local target = TartoJhin:GetTarget(2550)
 		if target == nil then return end
-		if TartoJhin:HasBuff(target, "jhinespotteddebuff") then 
-			local prediction = target:GetPrediction(5000, 0.75)
-			if WCollision:__GetHeroCollision(myHero, target, 3, target) then return end
-			Control.CastSpell(HK_W, prediction)
+		if TartoJhin:HasBuff(target, "jhinespotteddebuff") then
+			if myHero.activeSpell.valid then return end
+			local WPred = Prediction:SetSpell(W, TYPE_LINE, true)
+			local prediction = WPred:GetPrediction(target, myHero.pos)
+			if prediction and prediction.hitChance >= 0.25 and prediction:hCollision() == 0 then
+				Control.CastSpell(HK_W, prediction.castPos)
+			end
 		end
 	else
 		if TartoJhin.Menu.Combo.UseQ:Value() and TartoJhin:IsReady(_Q) then
-			local target = _G.SDK.TargetSelector:GetTarget(600, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+			if myHero.activeSpell.valid then return end
+			local target = TartoJhin:GetTarget(600)
 			if TartoJhin:HasBuff(myHero, "jhinpassiveattackbuff") then return end
 			if target == nil then return end
-			local prediction = target:GetPrediction(1800, 0)
-			Control.CastSpell(HK_Q, prediction)
+			TartoJhin:CastQReset(target)
 		end
 	end
 	if TartoJhin.Menu.Combo.UseQ:Value() and TartoJhin:IsReady(_Q) then
-		local target = _G.SDK.TargetSelector:GetTarget(600, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoJhin:GetTarget(600)
 		if TartoJhin:HasBuff(myHero, "jhinpassiveattackbuff") then return end
 		if target == nil then return end
 		if not TartoJhin:HasBuff(target, "jhinespotteddebuff") then
-			local prediction = target:GetPrediction(1800, 0)
-			Control.CastSpell(HK_Q, prediction)
+			TartoJhin:CastQReset(target)
 		end
 	end
 	if not TartoJhin:IsReady(_Q) and not TartoJhin:IsReady(_W) then
-
-		if --[[TartoJhin:ETick() and]] TartoJhin.Menu.Combo.UseE:Value() and TartoJhin.Menu.Combo.EComboMana:Value() < (100*myHero.mana/myHero.maxMana) and TartoJhin:IsReady(_E) and myHero:GetSpellData(_E).ammo ~= 0 then
-			local target = _G.SDK.TargetSelector:GetTarget(750, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if TartoJhin.Menu.Combo.UseE:Value() and TartoJhin.Menu.Combo.EComboMana:Value() < (100*myHero.mana/myHero.maxMana) and TartoJhin:IsReady(_E) and myHero:GetSpellData(_E).ammo ~= 0 then
+			if myHero.activeSpell.valid then return end
+			local target = TartoJhin:GetTarget(750)
 			if TartoJhin:HasBuff(myHero, "jhinpassiveattackbuff") then return end
 			if target == nil then return end
-			local prediction = target:GetPrediction(1600, 0.85)
-			Control.CastSpell(HK_E, prediction)
-		end
+			local EPred = Prediction:SetSpell(E, TYPE_CIRCULAR, true)
+			local prediction = EPred:GetPrediction(target, myHero.pos)
+			if Game.Timer() - ETime < 10 then return end
+			if prediction and prediction.hitChance >= 0.25 then
+				Control.CastSpell(HK_E, prediction.castPos)
+				ETime = (Game.Timer() + E.delay)
+			end
+		end	
 	end
 end
 
@@ -227,32 +293,35 @@ function TartoJhin:LaneClear()
 end
 
 function TartoJhin:Harass()
-	if _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL) == nil then return end
+	if TartoJhin:GetTarget(2550) == nil then return end
 
 	if TartoJhin.Menu.Harass.UseW:Value() and TartoJhin:IsReady(_W) then
-		local target = _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoJhin:GetTarget(2550)
 		if target == nil then return end
 		if TartoJhin:HasBuff(target, "jhinespotteddebuff") then 
-			local prediction = target:GetPrediction(5000, 0.75)
-			if WCollision:__GetHeroCollision(myHero, target, 3, target) then return end
-			Control.CastSpell(HK_W, prediction)
+			local WPred = Prediction:SetSpell(W, TYPE_LINE, true)
+			local prediction = WPred:GetPrediction(target, myHero.pos)
+			if prediction and prediction.hitChance >= 0.25 and prediction:hCollision() == 0 then
+				Control.CastSpell(HK_W, prediction.castPos)
+			end
 		end
 	else
 		if TartoJhin.Menu.Harass.UseQ:Value() and TartoJhin:IsReady(_Q) then
-			local target = _G.SDK.TargetSelector:GetTarget(600, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+			if myHero.activeSpell.valid then return end
+			local target = TartoJhin:GetTarget(600)
 			if TartoJhin:HasBuff(myHero, "jhinpassiveattackbuff") then return end
 			if target == nil then return end
-			local prediction = target:GetPrediction(1800, 0)
-			Control.CastSpell(HK_Q, prediction)
+			TartoJhin:CastQReset(target)
 		end
 	end
 	if TartoJhin.Menu.Harass.UseQ:Value() and TartoJhin:IsReady(_Q) then
-		local target = _G.SDK.TargetSelector:GetTarget(600, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoJhin:GetTarget(600)
 		if TartoJhin:HasBuff(myHero, "jhinpassiveattackbuff") then return end
 		if target == nil then return end
 		if not TartoJhin:HasBuff(target, "jhinespotteddebuff") then
-			local prediction = target:GetPrediction(1800, 0)
-			Control.CastSpell(HK_Q, prediction)
+			TartoJhin:CastQReset(target)
 		end
 	end
 end
@@ -261,59 +330,58 @@ function TartoJhin:LastHit()
 	-- LASTHIT A FAIRE
 end
 
---[[local Tick = GetTickCount()
-
-function TartoJhin:ETick()
-	local ETick = GetTickCount()
-	if ETick - Tick > 450 then
-		Tick = GetTickCount()
-		return true
-	else
-		return false
-	end
-
-end]]
-
 function TartoJhin:UltimateAimbot()
 	if myHero:GetSpellData(_R).name == "JhinR" and TartoJhin:IsReady(_R) and TartoJhin.Menu.UltimateR.ForceR:Value() then
-		local target = _G.SDK.TargetSelector:GetTarget(2500, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		TartoJhin:AllowMove(false)
+		local target = TartoJhin:GetTarget(2500)
 		Control.CastSpell(HK_R, target) return
 	end
 	if myHero:GetSpellData(_R).name == "JhinRShot" then
 		if TartoJhin.Menu.UltimateR.ForceR:Value() then
-			local target = _G.SDK.TargetSelector:GetTarget(3400, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+			TartoJhin:AllowMove(false)
+			local target = TartoJhin:GetTarget(3500)
 			if target == nil then return end
-			local prediction = target:GetPrediction(828.5, 0)
-			if RCollision:__GetHeroCollision(myHero, target, 3, target) then return end
-			Control.CastSpell(HK_R, prediction)
+			local RPred = Prediction:SetSpell(R, TYPE_LINE, true)
+			local prediction = RPred:GetPrediction(target, myHero.pos)
+			if prediction and prediction.hitChance >= 0.25 and prediction:hCollision() == 0 then
+				Control.CastSpell(HK_R, prediction.castPos)
+			end
 		end
+		TartoJhin:AllowMove(true)
 	end
 end
 
 function TartoJhin:StealableTarget()
-	if _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL) == nil then return end
+	if TartoJhin:GetTarget(2550) == nil then return end
 
 	if TartoJhin.Menu.Combo.UseWKillsteal:Value() and TartoJhin:IsReady(_W) then
-		local target = _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoJhin:GetTarget(2550)
 		if target == nil then return end
 		if (target.health + target.shieldAD + target.shieldAP) < getdmg("W", target, myHero) and target.distance >= (myHero.range + 250) then 
-			local prediction = target:GetPrediction(5000, 0.75)
-			if WCollision:__GetHeroCollision(myHero, target, 3, target) then return end
-			Control.CastSpell(HK_W, prediction)
+			local WPred = Prediction:SetSpell(W, TYPE_LINE, true)
+			local prediction = WPred:GetPrediction(target, myHero.pos)
+			if prediction and prediction.hitChance >= 0.25 and prediction:hCollision() == 0 then
+				Control.CastSpell(HK_W, prediction.castPos)
+			end
 		end
 	end
 end
 
 function TartoJhin:AutoW()
-	if _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL) == nil then return end
+	if TartoJhin:GetTarget(2550) == nil then return end
 
 	if TartoJhin.Menu.Misc.AutoW:Value() and TartoJhin:IsReady(_W) then
-		local target = _G.SDK.TargetSelector:GetTarget(2800, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoJhin:GetTarget(2550)
 		if target == nil then return end
 		if TartoJhin:HasBuff(target, "jhinespotteddebuff") then 
-			local prediction = target:GetPrediction(5000, 0.75)
-			if WCollision:__GetHeroCollision(myHero, target, 3, target) then return end
-			Control.CastSpell(HK_W, prediction)
+			local WPred = Prediction:SetSpell(W, TYPE_LINE, true)
+			local prediction = WPred:GetPrediction(target, myHero.pos)
+			if prediction and prediction.hitChance >= 0.25 and prediction:hCollision() == 0 then
+				Control.CastSpell(HK_W, prediction.castPos)
+			end
 		end
 	end
 end
