@@ -332,7 +332,6 @@ end
 
 function TartoJhin:UltimateAimbot()
 	if myHero:GetSpellData(_R).name == "JhinR" and TartoJhin:IsReady(_R) and TartoJhin.Menu.UltimateR.ForceR:Value() then
-		if myHero.activeSpell.valid then return end
 		TartoJhin:AllowMove(false)
 		local target = TartoJhin:GetTarget(2500)
 		Control.CastSpell(HK_R, target) return
