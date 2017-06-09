@@ -243,6 +243,7 @@ function TartoJhin:Combo()
 	--local ETick = GetTickCount()
 
 	if TartoJhin.Menu.Combo.UseW:Value() and TartoJhin:IsReady(_W) then
+		if myHero:GetSpellData(_R).name == "JhinRShot" then return end
 		local target = TartoJhin:GetTarget(2550)
 		if target == nil then return end
 		if TartoJhin:HasBuff(target, "jhinespotteddebuff") then
@@ -355,6 +356,7 @@ function TartoJhin:StealableTarget()
 	if TartoJhin:GetTarget(2550) == nil then return end
 
 	if TartoJhin.Menu.Combo.UseWKillsteal:Value() and TartoJhin:IsReady(_W) then
+		if myHero:GetSpellData(_R).name == "JhinRShot" then return end
 		if myHero.activeSpell.valid then return end
 		local target = TartoJhin:GetTarget(2550)
 		if target == nil then return end
@@ -372,6 +374,7 @@ function TartoJhin:AutoW()
 	if TartoJhin:GetTarget(2550) == nil then return end
 
 	if TartoJhin.Menu.Misc.AutoW:Value() and TartoJhin:IsReady(_W) then
+		if myHero:GetSpellData(_R).name == "JhinRShot" then return end
 		if myHero.activeSpell.valid then return end
 		local target = TartoJhin:GetTarget(2550)
 		if target == nil then return end
