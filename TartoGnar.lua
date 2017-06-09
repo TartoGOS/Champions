@@ -1,13 +1,9 @@
 if myHero.charName ~= "Gnar" then return end
 
-class "TartoGnar"
-
 require 'DamageLib'
-require '2DGeometry'
-require 'Collision'
+require 'Eternal Prediction'
 
-local QSpell = Collision:SetSpell(1100, 1200, 0.25, 60, true)
-local QMSpell = Collision:SetSpell(1100, 1200, 0.25, 80, true)
+class "TartoGnar"
 
 function TartoGnar:__init()
 	PrintChat("TartoGnar Loaded !")
@@ -18,10 +14,10 @@ function TartoGnar:__init()
 end
 
 function TartoGnar.LoadSpells()
-	Q = { range = 1100, delay = 0.25, speed = 1200, width = 60 }
-	QM = { range = 1100, delay = 0.25, speed = 1200, width = 80 }
-	WM = { range = 550, delay = 0.5, speed = math.huge, width = 80 }
-	R = { range = 475, delay = 0.5, speed = math.huge, width = 400 }
+	Q = { range = 1125, delay = 0.25, speed = 2500, width = 60 }
+	QM = { range = 1150, delay = 0.5, speed = 2100, width = 80 }
+	WM = { range = 600, delay = 0.6, speed = math.huge, width = 80 }
+	R = { range = 475, delay = 0.25, speed = math.huge, width = 500 }
 end
 
 function TartoGnar:LoadMenu()
@@ -60,7 +56,7 @@ function TartoGnar:LoadMenu()
 	TartoGnar.Menu.Killsteal:MenuElement({id = "StealQM", name = "Killsteal Q MEGA", value = false, leftIcon = "https://puu.sh/w7aQP/c2ab4c230c.png"})
 	TartoGnar.Menu.Killsteal:MenuElement({id = "StealR", name = "Killsteal R", value = false, leftIcon = "https://puu.sh/w7aYn/a4ac942f9c.png"})
 -- Infos
-	TartoGnar.Menu:MenuElement({name = "Version : 1.0", type = SPACE})
+	TartoGnar.Menu:MenuElement({name = "Version : 1.1", type = SPACE})
 	TartoGnar.Menu:MenuElement({name = "Patch   : 7.11", type = SPACE})
 	TartoGnar.Menu:MenuElement({name = "by Tarto", type = SPACE})
 
@@ -70,17 +66,68 @@ end
 function TartoGnar:Tick()
 	if not myHero.alive then return end
 	
-	if _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_COMBO] then
+	if TartoGnar:GetMode() == "Combo" then
 		TartoGnar:Combo()
-	elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_HARASS] then
+	elseif TartoGnar:GetMode() == "Harass" then
 		TartoGnar:Harass()
-	elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_LANECLEAR] then
+	elseif TartoGnar:GetMode() == "Clear" then
 		TartoGnar:LaneClear()
-	elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_LASTHIT] then
-		TartoGnar:LastHit()
 	end
 
 	TartoGnar:StealableTarget()
+end
+
+function TartoGnar:GetTarget(range)
+	if _G.SDK and _G.SDK.Orbwalker then
+		local target = _G.SDK.TargetSelector:GetTarget(range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		return target
+	elseif _G.EOWLoaded then
+		local target = EOW:GetTarget(range, easykill_acd)
+		return target
+	elseif _G.GOS then
+		local target = GOS:GetTarget(range, "AD")
+		return target
+	else PrintChat("No TargetSelector Loaded ..?")
+	end
+end
+
+function TartoGnar:CastQReset(target)
+	if target == nil then return end
+	if _G.SDK and _G.SDK.Orbwalker then
+		_G.SDK.Orbwalker:OnPostAttack(TartoGnar:CastQ(target))
+	elseif _G.EOWLoaded then
+		EOW:AddCallback(EOW.AfterAttack, TartoGnar:CastQ(target))
+	else 
+		GOS:OnAttackComplete(TartoGnar:CastQ(target))
+	end
+end
+
+--From Weedle
+local intToMode = {
+   		[0] = "",
+   		[1] = "Combo",
+   		[2] = "Harass",
+   		[3] = "LastHit",
+   		[4] = "Clear"
+	}
+
+--From Weedle
+function TartoGnar:GetMode()
+	if _G.EOWLoaded then
+		return intToMode[EOW.CurrentMode]
+	elseif _G.SDK and _G.SDK.Orbwalker then
+		if _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_COMBO] then
+			return "Combo"
+		elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_HARASS] then
+			return "Harass"	
+		elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_LANECLEAR] or _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_JUNGLECLEAR] then
+			return "Clear"
+		elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_LASTHIT] then
+			return "LastHit"
+		end
+	else
+		return GOS.GetMode()
+	end
 end
 
 function TartoGnar:Draw()
@@ -112,32 +159,36 @@ end
 -- Début Vrai Script
 
 function TartoGnar:Combo()
-	if _G.SDK.TargetSelector:GetTarget(Q.range, _G.SDK.DAMAGE_TYPE_PHYSICAL) == nil then return end
+	if TartoGnar:GetTarget(Q.range) == nil then return end
 
 	if (not TartoGnar:HasBuff(myHero, "gnartransform") or TartoGnar:HasBuff(myHero, "gnartransformsoon")) and TartoGnar.Menu.Combo.UseQ:Value() and TartoGnar:IsReady(_Q) then
-		local target = _G.SDK.TargetSelector:GetTarget(Q.range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoGnar:GetTarget(Q.range)
 		if target == nil then return end
-		local prediction = target:GetPrediction(Q.speed, Q.delay)
-		if QSpell:__GetMinionCollision(myHero, target, 5) then return end
-		if target.alive then
-			Control.CastSpell(HK_Q, prediction)
+		local QPred = Prediction:SetSpell(Q, TYPE_LINE, true)
+		local prediction = QPred:GetPrediction(target, myHero.pos)
+		if prediction and prediction.hitChance >= 0.25 and prediction:mCollision() == 0 and prediction:hCollision() == 0 then
+			Control.CastSpell(HK_Q, prediction.castPos)
 		end
 	end
 	if TartoGnar:HasBuff(myHero, "gnartransform") and TartoGnar.Menu.Combo.UseQM:Value() and TartoGnar:IsReady(_Q) then
-		local target = _G.SDK.TargetSelector:GetTarget(QM.range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoGnar:GetTarget(QM.range)
 		if target == nil then return end
-		local prediction = target:GetPrediction(QM.speed, QM.delay)
-		if QMSpell:__GetMinionCollision(myHero, target, 5) then return end
-		if target.alive then
-			Control.CastSpell(HK_Q, prediction)
+		local QMPred = Prediction:SetSpell(QM, TYPE_LINE, true)
+		local prediction = QMPred:GetPrediction(target, myHero.pos)
+		if prediction and prediction.hitChance >= 0.25 and prediction:mCollision() == 0 and prediction:hCollision() == 0 then
+			Control.CastSpell(HK_Q, prediction.castPos)
 		end
 	end
 	if (TartoGnar:HasBuff(myHero, "gnartransform") or TartoGnar:HasBuff(myHero, "gnartransformsoon")) and TartoGnar.Menu.Combo.UseWM:Value() and TartoGnar:IsReady(_W) then
-		local target = _G.SDK.TargetSelector:GetTarget(WM.range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoGnar:GetTarget(WM.range)
 		if target == nil then return end
-		local prediction = target:GetPrediction(WM.speed, WM.delay)
-		if target.alive then
-			Control.CastSpell(HK_W, prediction)
+		local WMPred = Prediction:SetSpell(WM, TYPE_LINE, true)
+		local prediction = WMPred:GetPrediction(target, myHero.pos)
+		if prediction and prediction.hitChance >= 0.25 then
+			Control.CastSpell(HK_W, prediction.castPos)
 		end
 	end
 
@@ -147,31 +198,35 @@ function TartoGnar:Combo()
 end
 
 function TartoGnar:Harass()
-	if _G.SDK.TargetSelector:GetTarget(Q.range, _G.SDK.DAMAGE_TYPE_PHYSICAL) == nil then return end
+	if TartoGnar:GetTarget(Q.range) == nil then return end
 	if (not TartoGnar:HasBuff(myHero, "gnartransform") or TartoGnar:HasBuff(myHero, "gnartransformsoon")) and TartoGnar.Menu.Combo.UseQ:Value() and TartoGnar:IsReady(_Q) then
-		local target = _G.SDK.TargetSelector:GetTarget(1100, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoGnar:GetTarget(1100)
 		if target == nil then return end
-		local prediction = target:GetPrediction(Q.speed, Q.delay)
-		if QSpell:__GetMinionCollision(myHero, target, 5) then return end
-		if target.alive then
-			Control.CastSpell(HK_Q, prediction)
+		local QPred = Prediction:SetSpell(Q, TYPE_LINE, true)
+		local prediction = QPred:GetPrediction(target, myHero.pos)
+		if prediction and prediction.hitChance >= 0.25 and prediction:mCollision() == 0 and prediction:hCollision() == 0 then
+			Control.CastSpell(HK_Q, prediction.castPos)
 		end
 	end
 	if (TartoGnar:HasBuff(myHero, "gnartransform") or TartoGnar:HasBuff(myHero, "gnartransformsoon")) and TartoGnar.Menu.Combo.UseWM:Value() and TartoGnar:IsReady(_W) then
-		local target = _G.SDK.TargetSelector:GetTarget(WM.range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoGnar:GetTarget(WM.range)
 		if target == nil then return end
-		local prediction = target:GetPrediction(WM.speed, WM.delay)
-		if target.alive then
-			Control.CastSpell(HK_W, prediction)
+		local WMPred = Prediction:SetSpell(WM, TYPE_LINE, true)
+		local prediction = WMPred:GetPrediction(target, myHero.pos)
+		if prediction and prediction.hitChance >= 0.25 then
+			Control.CastSpell(HK_W, prediction.castPos)
 		end
 	end
 	if TartoGnar:HasBuff(myHero, "gnartransform") and TartoGnar.Menu.Combo.UseQM:Value() and TartoGnar:IsReady(_Q) then
-		local target = _G.SDK.TargetSelector:GetTarget(QM.range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoGnar:GetTarget(QM.range)
 		if target == nil then return end
-		local prediction = target:GetPrediction(QM.speed, QM.delay)
-		if QMSpell:__GetMinionCollision(myHero, target, 5) then return end
-		if target.alive then
-			Control.CastSpell(HK_Q, prediction)
+		local QMPred = Prediction:SetSpell(QM, TYPE_LINE, true)
+		local prediction = QMPred:GetPrediction(target, myHero.pos)
+		if prediction and prediction.hitChance >= 0.25 and prediction:mCollision() == 0 and prediction:hCollision() == 0 then
+			Control.CastSpell(HK_Q, prediction.castPos)
 		end
 	end
 end
@@ -209,45 +264,51 @@ end
 
 
 function TartoGnar:StealableTarget()
-	if _G.SDK.TargetSelector:GetTarget(Q.range, _G.SDK.DAMAGE_TYPE_PHYSICAL) == nil then return end
+	if TartoGnar:GetTarget(Q.range) == nil then return end
 
 	if (not TartoGnar:HasBuff(myHero, "gnartransform") or TartoGnar:HasBuff(myHero, "gnartransformsoon")) and TartoGnar.Menu.Killsteal.StealQ:Value() and TartoGnar:IsReady(_Q) then
-		local target = _G.SDK.TargetSelector:GetTarget(Q.range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoGnar:GetTarget(Q.range)
 		if target.alive and (target.health + target.shieldAD + target.shieldAP) < getdmg("Q", target, myHero) then
 			if target == nil then return end
-			local prediction = target:GetPrediction(Q.speed, Q.delay)
-			if QSpell:__GetMinionCollision(myHero, target, 5) then return end
-			Control.CastSpell(HK_Q, prediction)
+			local QPred = Prediction:SetSpell(Q, TYPE_LINE, true)
+			local prediction = QPred:GetPrediction(target, myHero.pos)
+			if prediction and prediction.hitChance >= 0.25 and prediction:mCollision() == 0 and prediction:hCollision() == 0 then
+				Control.CastSpell(HK_Q, prediction.castPos)
+			end
 		end
 	end
 	if TartoGnar:HasBuff(myHero, "gnartransform") and TartoGnar.Menu.Killsteal.StealQM:Value() and TartoGnar:IsReady(_Q) then
-		local target = _G.SDK.TargetSelector:GetTarget(QM.range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoGnar:GetTarget(QM.range)
 		local DamageQM = ({5, 45, 85, 125, 165})[myHero:GetSpellData(_Q).level] + 1.2 * myHero.totalDamage
 		if target.alive and (target.health + target.shieldAD + target.shieldAP) < DamageQM then
 			if target == nil then return end
-			local prediction = target:GetPrediction(QM.speed, QM.delay)
-			if QMSpell:__GetMinionCollision(myHero, target, 5) then return end
-			Control.CastSpell(HK_Q, prediction)
+			local QMPred = Prediction:SetSpell(QM, TYPE_LINE, true)
+			local prediction = QMPred:GetPrediction(target, myHero.pos)
+			if prediction and prediction.hitChance >= 0.25 and prediction:mCollision() == 0 and prediction:hCollision() == 0 then
+				Control.CastSpell(HK_Q, prediction.castPos)
+			end
 		end
 	end
 
-	if _G.SDK.TargetSelector:GetTarget(R.range, _G.SDK.DAMAGE_TYPE_PHYSICAL) == nil then return end
+	if TartoGnar:GetTarget(R.range) == nil then return end
 
 	if TartoGnar:HasBuff(myHero, "gnartransform") and TartoGnar.Menu.Killsteal.StealR:Value() and TartoGnar:IsReady(_R) and not TartoGnar:IsReady(_Q) then
-		local target = _G.SDK.TargetSelector:GetTarget(R.range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+		if myHero.activeSpell.valid then return end
+		local target = TartoGnar:GetTarget(R.range)
 		if target.alive and (target.health + target.shieldAD + target.shieldAP) < getdmg("R", target, myHero) then
 			if target == nil then return end
-			local prediction = target:GetPrediction(R.speed, R.delay)
-			Control.CastSpell(HK_R, prediction)
+			local RPred = Prediction:SetSpell(R, TYPE_CIRCULAR, true)
+			local prediction = RPred:GetPrediction(target, myHero.pos)
+			if prediction and prediction.hitChance >= 0.25 and prediction:mCollision() == 0 and prediction:hCollision() == 0 then
+				Control.CastSpell(HK_R, prediction.castPos)
+			end
 		end
 	end
 end
 
 -- Fonctions nécessaires
-
-function TartoGnar:QCollision(target, width, speed, delay)
-	--QCOLLISION
-end
 
 function TartoGnar:CCed(unit)
 	for i = 0, unit.buffCount do
