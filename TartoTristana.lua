@@ -33,6 +33,7 @@ function TartoTristana:LoadMenu()
 	--Harass
 	TartoTristana.Menu.Harass:MenuElement({id = "UseQ", name = "Use Q", value = false, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista10.png"})
 	TartoTristana.Menu.Harass:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
+	TartoTristana.Menu.Harass:MenuElement({id = "EHarassMana", name = "E Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
 	--Draw
 	TartoTristana.Menu.Draw:MenuElement({id = "DrawReady", name = "Draw Only Ready Spells [?]", value = false})
 	TartoTristana.Menu.Draw:MenuElement({id = "DrawQ", name = "Draw Q Range", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista10.png"})
@@ -247,7 +248,7 @@ function TartoTristana:Harass()
 		TartoTristana:ForceE(target)
 	end
 
-	if TartoTristana.Menu.Harass.UseE:Value() and TartoTristana:IsReady(_E) then
+	if TartoTristana.Menu.Harass.UseE:Value() and TartoTristana:IsReady(_E) and TartoTristana.Menu.Harass.EHarassMana:Value() < (100*myHero.mana/myHero.maxMana) then
 		local target = TartoTristana:GetTarget(TartoTristana:AARange())
 		TartoTristana:CastEReset(target)
 	end
