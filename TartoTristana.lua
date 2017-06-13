@@ -25,6 +25,7 @@ function TartoTristana:LoadMenu()
 	TartoTristana.Menu = MenuElement({id = "TartoTristana", name = "Tristana", type = MENU, leftIcon = "https://puu.sh/wi7Si/16b21a5a4d.png"})
 	TartoTristana.Menu:MenuElement({id = "Combo", name = "Combo", type = MENU})
 	TartoTristana.Menu:MenuElement({id = "Harass", name = "Harass", type = MENU})
+	TartoTristana.Menu:MenuElement({id = "LaneClear", name = "LaneClear", type = MENU})
 	TartoTristana.Menu:MenuElement({id = "Draw", name = "Drawings", type = MENU})
 	--Combo
 	TartoTristana.Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista10.png"})
@@ -34,6 +35,10 @@ function TartoTristana:LoadMenu()
 	TartoTristana.Menu.Harass:MenuElement({id = "UseQ", name = "Use Q", value = false, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista10.png"})
 	TartoTristana.Menu.Harass:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
 	TartoTristana.Menu.Harass:MenuElement({id = "EHarassMana", name = "E Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
+	--LaneClear
+	TartoTristana.Menu.LaneClear:MenuElement({id = "UseETurret", name = "Use E on Turret", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
+	TartoTristana.Menu.LaneClear:MenuElement({id = "UseETurretMana", name = "E Turret Mana Manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
+	TartoTristana.Menu.LaneClear:MenuElement({id = "UseQ", name = "Use Q", value = false, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista10.png"})
 	--Draw
 	TartoTristana.Menu.Draw:MenuElement({id = "DrawReady", name = "Draw Only Ready Spells [?]", value = false})
 	TartoTristana.Menu.Draw:MenuElement({id = "DrawQ", name = "Draw Q Range", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista10.png"})
@@ -199,6 +204,24 @@ function TartoTristana:ValidEnemyE(range)
 	end
 end
 
+function TartoTristana:ValidTurret(range)
+	for i = 1, Game.TurretCount() do
+		local target = Game.Turret(i)
+		if target.pos:DistanceTo(myHero.pos) <= range then
+			return target
+		end
+	end
+end
+
+function TartoTristana:ValidMinion(range)
+	for i = 1, Game.MinionCount() do
+		local target = Game.Minion(i)
+		if target.pos:DistanceTo(myHero.pos) <= range then
+			return target
+		end
+	end
+end
+
 function TartoTristana:ForceE(target)
 	if _G.SDK and _G.SDK.Orbwalker then
 		if target.pos.DistanceTo(myHero.pos) <= TartoTristana:AARange() then
@@ -252,6 +275,15 @@ end
 
 function TartoTristana:Clear()
 	TartoTristana:NoForce()
+
+	if TartoTristana:ValidTurret(TartoTristana:AARange()) and TartoTristana.Menu.LaneClear.UseETurret:Value() and TartoTristana:IsReady(_E) and TartoTristana.Menu.LaneClear.UseETurretMana:Value() < (100*myHero.mana/myHero.maxMana) then
+		local target = TartoTristana:ValidTurret(TartoTristana:AARange())
+		TartoTristana:CastEReset(target)
+	end
+
+	if TartoTristana:ValidMinion(TartoTristana:AARange()) and TartoTristana.Menu.LaneClear.UseQ:Value() and TartoTristana:IsReady(_Q) then
+		TartoTristana:CastQ()
+	end
 end
 
 function TartoTristana:Harass()
