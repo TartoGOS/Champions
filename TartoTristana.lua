@@ -30,10 +30,12 @@ function TartoTristana:LoadMenu()
 	--Combo
 	TartoTristana.Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista10.png"})
 	TartoTristana.Menu.Combo:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
+	TartoTristana.Menu.Combo:MenuElement({id = "EForce", name = "Force E target", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
 	TartoTristana.Menu.Combo:MenuElement({id = "UseR", name = "Use R", value = false, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista11.png"})
 	--Harass
 	TartoTristana.Menu.Harass:MenuElement({id = "UseQ", name = "Use Q", value = false, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista10.png"})
 	TartoTristana.Menu.Harass:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
+	TartoTristana.Menu.Harass:MenuElement({id = "EForce", name = "Force E target", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
 	TartoTristana.Menu.Harass:MenuElement({id = "EHarassMana", name = "E Mana manager", value = 40, min = 0, max = 100, step = 1, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
 	--LaneClear
 	TartoTristana.Menu.LaneClear:MenuElement({id = "UseETurret", name = "Use E on Turret", value = true, leftIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trista13.png"})
@@ -248,11 +250,13 @@ end
 function TartoTristana:Combo()
 	if TartoTristana:GetTarget(TartoTristana:AARange()) == nil then return end
 
-	if TartoTristana:ValidEnemyE(TartoTristana:AARange()) ~= nil then
-		local target = TartoTristana:ValidEnemyE(TartoTristana:AARange())
-		TartoTristana:ForceE(target)
-	elseif TartoTristana:ValidEnemyE(TartoTristana:AARange()) == nil then
-		TartoTristana:NoForce()
+	if TartoTristana.Menu.Combo.EForce:Value() then
+		if TartoTristana:ValidEnemyE(TartoTristana:AARange()) ~= nil then
+			local target = TartoTristana:ValidEnemyE(TartoTristana:AARange())
+			TartoTristana:ForceE(target)
+		elseif TartoTristana:ValidEnemyE(TartoTristana:AARange()) == nil then
+			TartoTristana:NoForce()
+		end
 	end
 
 	--tristanaechargesound
@@ -291,11 +295,13 @@ end
 function TartoTristana:Harass()
 	if TartoTristana:GetTarget(TartoTristana:AARange()) == nil then return end
 
-	if TartoTristana:ValidEnemyE(TartoTristana:AARange()) ~= nil then
-		local target = TartoTristana:ValidEnemyE(TartoTristana:AARange())
-		TartoTristana:ForceE(target)
-	elseif TartoTristana:ValidEnemyE(TartoTristana:AARange()) == nil then
-		TartoTristana:NoForce()
+	if TartoTristana.Menu.Harass.EForce:Value() then
+		if TartoTristana:ValidEnemyE(TartoTristana:AARange()) ~= nil then
+			local target = TartoTristana:ValidEnemyE(TartoTristana:AARange())
+			TartoTristana:ForceE(target)
+		elseif TartoTristana:ValidEnemyE(TartoTristana:AARange()) == nil then
+			TartoTristana:NoForce()
+		end
 	end
 
 	if TartoTristana.Menu.Harass.UseE:Value() and TartoTristana:IsReady(_E) and TartoTristana.Menu.Harass.EHarassMana:Value() < (100*myHero.mana/myHero.maxMana) then
