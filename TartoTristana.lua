@@ -278,7 +278,9 @@ function TartoTristana:Clear()
 
 	if TartoTristana:ValidTurret(TartoTristana:AARange()) and TartoTristana.Menu.LaneClear.UseETurret:Value() and TartoTristana:IsReady(_E) and TartoTristana.Menu.LaneClear.UseETurretMana:Value() < (100*myHero.mana/myHero.maxMana) then
 		local target = TartoTristana:ValidTurret(TartoTristana:AARange())
-		TartoTristana:CastEReset(target)
+		if target.isEnemy then
+			TartoTristana:CastEReset(target)
+		end
 	end
 
 	if TartoTristana:ValidMinion(TartoTristana:AARange()) and TartoTristana.Menu.LaneClear.UseQ:Value() and TartoTristana:IsReady(_Q) then
