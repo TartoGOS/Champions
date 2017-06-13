@@ -54,9 +54,9 @@ function TartoTristana:Tick()
 	elseif TartoTristana:GetMode() == "Harass" then
 		TartoTristana:Harass()
 	elseif TartoTristana:GetMode() == "Clear" then
-		TartoTristana:LaneClear()
+		TartoTristana:Clear()
 	elseif TartoTristana:GetMode() == "LastHit" then
-		TartoTristana:LaneClear()
+		TartoTristana:LastHit()
 	end
 end
 
