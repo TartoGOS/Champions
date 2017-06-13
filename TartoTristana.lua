@@ -201,11 +201,23 @@ end
 
 function TartoTristana:ForceE(target)
 	if _G.SDK and _G.SDK.Orbwalker then
-		_G.SDK.Orbwalker.ForceTarget = target
+		if target.pos.DistanceTo(myHero.pos) <= TartoTristana:AARange() then
+			_G.SDK.Orbwalker.ForceTarget = target
+		end
 	elseif _G.EOWLoaded then
 		EOW:ForceTarget(target)
 	elseif _G.GOS then
 		GOS:ForceTarget(target)
+	end
+end
+
+function TartoTristana:NoForce()
+	if _G.SDK and _G.SDK.Orbwalker then
+		_G.SDK.Orbwalker.ForceTarget = nil
+	elseif _G.EOWLoaded then
+		EOW:ForceTarget(nil)
+	elseif _G.GOS then
+		GOS:ForceTarget(nil)
 	end
 end
 
@@ -216,6 +228,8 @@ function TartoTristana:Combo()
 	if TartoTristana:ValidEnemyE(TartoTristana:AARange()) ~= nil then
 		local target = TartoTristana:ValidEnemyE(TartoTristana:AARange())
 		TartoTristana:ForceE(target)
+	elseif TartoTristana:ValidEnemyE(TartoTristana:AARange()) == nil then
+		TartoTristana:NoForce()
 	end
 
 	--tristanaechargesound
@@ -237,7 +251,7 @@ function TartoTristana:Combo()
 end
 
 function TartoTristana:Clear()
-	--
+	TartoTristana:NoForce()
 end
 
 function TartoTristana:Harass()
@@ -246,6 +260,8 @@ function TartoTristana:Harass()
 	if TartoTristana:ValidEnemyE(TartoTristana:AARange()) ~= nil then
 		local target = TartoTristana:ValidEnemyE(TartoTristana:AARange())
 		TartoTristana:ForceE(target)
+	elseif TartoTristana:ValidEnemyE(TartoTristana:AARange()) == nil then
+		TartoTristana:NoForce()
 	end
 
 	if TartoTristana.Menu.Harass.UseE:Value() and TartoTristana:IsReady(_E) and TartoTristana.Menu.Harass.EHarassMana:Value() < (100*myHero.mana/myHero.maxMana) then
@@ -259,7 +275,7 @@ function TartoTristana:Harass()
 end
 
 function TartoTristana:LastHit()
-	--
+	TartoTristana:NoForce()
 end
 
 function TartoTristana:CastEReset(target)
