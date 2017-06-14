@@ -360,7 +360,9 @@ function TartoJinx:StealableTarget()
 		local target = TartoJinx:GetTarget(1500)
 		if target == nil then return end
 		if target.pos:DistanceTo(myHero.pos) > TartoJinx:QRange() and target.pos:DistanceTo(myHero.pos) <= 1500 then
-			TartoJinx:CastW(target)
+			if (target.health + target.shieldAD + target.shieldAP) < getdmg("W", target, myHero) then
+				TartoJinx:CastW(target)
+			end
 		end
 	end
 
@@ -369,10 +371,12 @@ function TartoJinx:StealableTarget()
 		local target = TartoJinx:GetTarget(2500)
 		if target == nil then return end
 		if target.pos:DistanceTo(myHero.pos) > TartoJinx:QRange() and target.pos:DistanceTo(myHero.pos) <= R.range then
-			local RPred = Prediction:SetSpell(R, TYPE_LINE, true)
-			local prediction = RPred:GetPrediction(target, myHero.pos)
-			if prediction and prediction.hitChance >= TartoJinx.Menu.Hitchance.RHit:Value() and prediction:hCollision() == 0 then
-				Control.CastSpell(HK_R, prediction.castPos)
+			if (target.health + target.shieldAD + target.shieldAP) < getdmg("R", target, myHero) then
+				local RPred = Prediction:SetSpell(R, TYPE_LINE, true)
+				local prediction = RPred:GetPrediction(target, myHero.pos)
+				if prediction and prediction.hitChance >= TartoJinx.Menu.Hitchance.RHit:Value() and prediction:hCollision() == 0 then
+					Control.CastSpell(HK_R, prediction.castPos)
+				end
 			end
 		end
 	end
