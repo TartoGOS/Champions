@@ -24,7 +24,10 @@ function TartoJinx:LoadMenu()
 	TartoJinx.Menu = MenuElement({id = "TartoJinx", name = "Jinx", type = MENU, leftIcon = "https://puu.sh/wjmUo/6fcac89c6e.png"})
 	TartoJinx.Menu:MenuElement({id = "Combo", name = "Combo", type = MENU})
 	TartoJinx.Menu:MenuElement({id = "Harass", name = "Harass", type = MENU})
+	TartoJinx.Menu:MenuElement({id = "LaneClear", name = "LaneClear", type = MENU})
+	TartoJinx.Menu:MenuElement({id = "LastHit", name = "LastHit", type = MENU})
 	TartoJinx.Menu:MenuElement({id = "Hitchance", name = "Hitchance", type = MENU})
+	TartoJinx.Menu:MenuElement({id = "Killsteal", name = "Killsteal", type = MENU})
 	TartoJinx.Menu:MenuElement({id = "Draw", name = "Drawings", type = MENU})
 	--Combo
 	TartoJinx.Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = "https://puu.sh/wjmN5/aafda0c781.png"})
@@ -33,10 +36,20 @@ function TartoJinx:LoadMenu()
 	TartoJinx.Menu.Combo:MenuElement({id = "UseR", name = "Use R key", key = string.byte("T"), leftIcon = "https://puu.sh/wjmSz/9170a27129.png"})
 	--Harass
 	TartoJinx.Menu.Harass:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = "https://puu.sh/wjmN5/aafda0c781.png"})
+	TartoJinx.Menu.Harass:MenuElement({id = "QMana", name = "Min mana to use rocket AA", value = 40, min = 0, max = 100, step = 1, leftIcon= "https://puu.sh/wjmMv/546108c680.png"})
 	TartoJinx.Menu.Harass:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = "https://puu.sh/wjmPk/900b665295.png"})
+	TartoJinx.Menu.Harass:MenuElement({id = "WMana", name = "Min mana to use W", value = 40, min = 0, max = 100, step = 1, leftIcon= "https://puu.sh/wjmPk/900b665295.png"})
+	TartoJinx.Menu.Harass:MenuElement({id = "Switch", name = "Switch to Minigun to hit minion", value = true, leftIcon = "https://puu.sh/wjmN5/aafda0c781.png"})
+	--LaneClear
+	TartoJinx.Menu.LaneClear:MenuElement({id = "Switch", name = "Switch to Minigun to hit minion", value = true, leftIcon = "https://puu.sh/wjmN5/aafda0c781.png"})
+	--LastHit
+	TartoJinx.Menu.LastHit:MenuElement({id = "SwitchQ", name = "Switch to Minigun to hit minion", value = true, leftIcon = "https://puu.sh/wjmN5/aafda0c781.png"})
 	--Hitchance
 	TartoJinx.Menu.Hitchance:MenuElement({id = "WHit", name = "W Hitchance", value = 0.25, min = 0.05, max = 1, step = 0.05, leftIcon = "https://puu.sh/wjmPk/900b665295.png"})
 	TartoJinx.Menu.Hitchance:MenuElement({id = "RHit", name = "R Hitchance", value = 0.25, min = 0.05, max = 1, step = 0.05, leftIcon = "https://puu.sh/wjmSz/9170a27129.png"})
+	--Killsteal
+	TartoJinx.Menu.Killsteal:MenuElement({id = "WKill", name = "W Killsteal", value = false, leftIcon = "https://puu.sh/wjmPk/900b665295.png"})
+	TartoJinx.Menu.Killsteal:MenuElement({id = "RKill", name = "R Killsteal", value = false, leftIcon = "https://puu.sh/wjmSz/9170a27129.png"})
 	--Draw
 	TartoJinx.Menu.Draw:MenuElement({id = "DrawReady", name = "Draw Only Ready Spells [?]", value = false})
 	TartoJinx.Menu.Draw:MenuElement({id = "DrawFish", name = "Draw Fishbones range", value = true, leftIcon = "https://puu.sh/wjmMv/546108c680.png"})
@@ -45,7 +58,7 @@ function TartoJinx:LoadMenu()
 	TartoJinx.Menu.Draw:MenuElement({id = "DrawR", name = "Draw R Range", value = true, leftIcon = "https://puu.sh/wjmSz/9170a27129.png"})
 	--Infos
 	TartoJinx.Menu:MenuElement({name = "Version : 1.0", type = SPACE})
-	TartoJinx.Menu:MenuElement({name = "Patch   : 7.11", type = SPACE})
+	TartoJinx.Menu:MenuElement({name = "Patch   : 7.12", type = SPACE})
 	TartoJinx.Menu:MenuElement({name = "by Tarto", type = SPACE})
 end
 
@@ -59,10 +72,11 @@ function TartoJinx:Tick()
 	elseif TartoJinx:GetMode() == "Clear" then
 		TartoJinx:LaneClear()
 	elseif TartoJinx:GetMode() == "LastHit" then
-		TartoJinx:LaneClear()
+		TartoJinx:LastHit()
 	end
 
 	TartoJinx:RPress()
+	TartoJinx:StealableTarget()
 end
 
 --From Weedle, ty
@@ -259,26 +273,30 @@ function TartoJinx:Combo()
 end
 
 function TartoJinx:LaneClear()
-	TartoJinx:CastQFarm()
+	if TartoJinx.Menu.LaneClear.Switch:Value() then
+		TartoJinx:CastQFarm()
+	end
 end
 
 function TartoJinx:Harass()
-	if TartoJinx.Menu.Combo.UseQ:Value() and TartoJinx:IsReady(_Q) then
+	if TartoJinx.Menu.Combo.UseQ:Value() and TartoJinx:IsReady(_Q) and TartoJinx.Menu.Harass.QMana:Value() < (100*myHero.mana/myHero.maxMana) then
 		local target = TartoJinx:GetTarget(TartoJinx:QRange())
 		TartoJinx:CastQ(target)
 	end
-	if TartoJinx.Menu.Combo.UseW:Value() and TartoJinx:IsReady(_W) then
+	if TartoJinx.Menu.Combo.UseW:Value() and TartoJinx:IsReady(_W) and TartoJinx.Menu.Harass.WMana:Value() < (100*myHero.mana/myHero.maxMana) then
 		local target = TartoJinx:GetTarget(W.range)
 		TartoJinx:CastW(target)
 	end
 
-	if TartoJinx:GetTarget(TartoJinx:QRange()) == nil then
+	if TartoJinx:GetTarget(TartoJinx:QRange()) == nil and TartoJinx.Menu.Harass.Switch:Value() then
 		TartoJinx:CastQFarm()
 	end
 end
 
 function TartoJinx:LastHit()
-	TartoJinx:CastQFarm()
+	if TartoJinx.Menu.LastHit.SwitchQ:Value() then
+		TartoJinx:CastQFarm()
+	end
 end
 
 function TartoJinx:RPress()
@@ -304,9 +322,9 @@ function TartoJinx:CastQ(target)
 	if target == nil then return end
 	if myHero.activeSpell.valid then return end
 
-	if myHero:GetSpellData(_Q).toggleState == 1 and target.pos:DistanceTo(myHero.pos) > 525 and target.pos:DistanceTo(myHero.pos) < TartoJinx:QRange() and myHero.mana > 20 then
+	if myHero:GetSpellData(_Q).toggleState == 1 and target.pos:DistanceTo(myHero.pos) > 575 and target.pos:DistanceTo(myHero.pos) < TartoJinx:QRange() and myHero.mana > 20 then
 		Control.CastSpell(HK_Q)
-	elseif myHero:GetSpellData(_Q).toggleState == 2 and target.pos:DistanceTo(myHero.pos) <= 525 then
+	elseif myHero:GetSpellData(_Q).toggleState == 2 and target.pos:DistanceTo(myHero.pos) <= 575 then
 		Control.CastSpell(HK_Q)
 	end
 end
@@ -332,6 +350,32 @@ end
 
 function TartoJinx:CastR(target)
 	--
+end
+
+function TartoJinx:StealableTarget()
+	if TartoJinx:GetTarget(2500) == nil then return end
+
+	if TartoJinx.Menu.Killsteal.WKill:Value() and TartoJinx:IsReady(_W) then
+		if myHero.activeSpell.valid then return end
+		local target = TartoJinx:GetTarget(1500)
+		if target == nil then return end
+		if target.pos:DistanceTo(myHero.pos) > TartoJinx:QRange() and target.pos:DistanceTo(myHero.pos) <= 1500 then
+			TartoJinx:CastW(target)
+		end
+	end
+
+	if TartoJinx.Menu.Killsteal.RKill:Value() and TartoJinx:IsReady(_R) then
+		if myHero.activeSpell.valid then return end
+		local target = TartoJinx:GetTarget(2500)
+		if target == nil then return end
+		if target.pos:DistanceTo(myHero.pos) > TartoJinx:QRange() and target.pos:DistanceTo(myHero.pos) <= R.range then
+			local RPred = Prediction:SetSpell(R, TYPE_LINE, true)
+			local prediction = RPred:GetPrediction(target, myHero.pos)
+			if prediction and prediction.hitChance >= TartoJinx.Menu.Hitchance.RHit:Value() and prediction:hCollision() == 0 then
+				Control.CastSpell(HK_R, prediction.castPos)
+			end
+		end
+	end
 end
 
 function OnLoad()
