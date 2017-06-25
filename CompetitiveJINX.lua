@@ -20,6 +20,7 @@ local TKIcon = "https://i58.servimg.com/u/f58/16/33/77/19/trk10.png"
 local Tarto = "https://i58.servimg.com/u/f58/16/33/77/19/baguli10.jpg"
 local H = myHero
 local ColorY = Draw.Color(255, 255, 255, 100)
+local ColorZ = Draw.Color(255, 255, 200, 100)
 local ping = Game.Latency()
 local SpellTick = 0 --soon
 print("Competitive Jinx Loaded.")
@@ -35,7 +36,7 @@ Menu:MenuElement({id = "ESet", name = "E Settings", type = MENU})
 --Menu:MenuElement({id = "Baseult", name = "Toggle", type = MENU})
 Menu:MenuElement({id = "Items", name = "Items usage", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
-Menu:MenuElement({name = "Version : 1.0", type = SPACE})
+Menu:MenuElement({name = "Version : 1.05", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE, rightIcon = Tarto})
 --Combo
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
@@ -66,6 +67,7 @@ Menu.ESet:MenuElement({id = "ECC", name = "Auto-use E on CC", value = false, lef
 --Items
 --Menu.Items:MenuElement({id = "UseBotrk", name = "Use Botrk", value = true, leftIcon = BIcon})
 --Drawings
+Menu.Drawings:MenuElement({id = "DrawAuto", name = "Draw AA Range", value = true, leftIcon = HeroIcon})
 Menu.Drawings:MenuElement({id = "DrawQ", name = "Draw Q Range", value = true, leftIcon = QIcon})
 Menu.Drawings:MenuElement({id = "DrawW", name = "Draw W Range", value = true, leftIcon = WIcon})
 Menu.Drawings:MenuElement({id = "DrawR", name = "Draw R Range", value = true, leftIcon = RIcon})
@@ -107,6 +109,9 @@ end
 
 function Draws()
 	if H.dead then return end
+	if Menu.Drawings.DrawAuto:Value() then
+		Draw.Circle(H.pos, H.range+130, 2, ColorZ)
+	end
 	if Menu.Drawings.DrawQ:Value() then
 		Draw.Circle(H.pos, QRange(), 2, ColorY)
 	end
@@ -130,8 +135,8 @@ function TargetDistance(range)
 	local target = nil
 	for i = 0, Game.HeroCount() do
 		local Hero = Game.Hero(i)
-		if math.sqrt(DistTo(Hero.pos, H.pos)) <= range then
-			if target == nil then target = Hero*2 end
+		if math.sqrt(DistTo(Hero.pos, H.pos)) <= range and Hero.isEnemy then
+			if target == nil then target = Hero break end
 			if math.sqrt(DistTo(Hero.pos, H.pos)) < math.sqrt(DistTo(target.pos, H.pos)) then
 				target = Hero
 			end
@@ -313,8 +318,8 @@ function CastOnly(spell)
 end
 
 function QRange()
-	if H:GetSpellData(0).level == 0 then return 525 end
-	local range = {600, 625, 650, 675, 700}
+	if H:GetSpellData(0).level == 0 then return 655 end
+	local range = {600+130, 625+130, 650+130, 675+130, 700+130}
 	return range[H:GetSpellData(0).level]
 end
 
@@ -447,7 +452,7 @@ function StealableTarget()
 	castXstate = 1
 	OrbState("Global", true)
 	if Menu.Killsteal.UseR:Value() and Game.CanUseSpell(1) == 0 then
-		if myHero.activeSpell.valid then return end
+		if H.activeSpell.valid then return end
 		local target = Target(W.range, "easy")
 		if Target(W.range, "easy") == nil then return end
 		if math.sqrt(DistTo(target.pos, H.pos)) < W.range then
@@ -457,7 +462,7 @@ function StealableTarget()
 		end
 	end
 	if Menu.Killsteal.UseR:Value() and Game.CanUseSpell(3) == 0 then
-		if myHero.activeSpell.valid then return end
+		if H.activeSpell.valid then return end
 		local target = Target(R.range, "easy")
 		if Target(R.range, "easy") == nil then return end
 		if math.sqrt(DistTo(target.pos, H.pos)) < R.range then
@@ -468,7 +473,109 @@ function StealableTarget()
 	end
 end
 
+function Force(target)
+	if target ~= nil then
+		if _G.SDK then
+			_G.SDK.Orbwalker.ForceTarget = target
+		elseif _G.EOWLoaded then
+			EOW:ForceTarget(target)
+		elseif _G.GOS then
+			GOS:ForceTarget(target)
+		end
+	else
+		if _G.SDK then
+			_G.SDK.Orbwalker.ForceTarget = nil
+		elseif _G.EOWLoaded then
+			EOW:ForceTarget(nil)
+		elseif _G.GOS then
+			GOS:ForceTarget(nil)
+		end
+	end
+end
+
+--SRU_OrderMinionSiege
+--SRU_OrderMinionRanged
+--SRU_OrderMinionMelee
+--SRU_OrderMinionSuper
+--SRU_ChaosMinionRanged
+--SRU_ChaosMinionMelee
+--SRU_ChaosMinionSiege
+--SRU_ChaosMinionSuper
+
+function MinionNumber(range, Type)
+	if range == nil then return end
+	local count = 0
+	if Type == nil then
+		local minion = 0
+		for i = 0, Game.MinionCount() do
+			local minion = Game.Minion(i)
+			if DistTo(minion.pos, H.pos) < range then
+				count = count + 1
+			end
+		end
+	elseif Type == "ranged" then
+		local minion = 0
+		for i = 0, Game.MinionCount() do
+			local minion = Game.Minion(i)
+			if H.team == 100 then
+				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_ChaosMinionRanged" then
+					count = count + 1
+				end
+			elseif H.team == 200 then
+				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_OrderMinionRanged" then
+					count = count + 1
+				end
+			end
+		end
+	elseif Type == "melee" then
+		local minion = 0
+		for i = 0, Game.MinionCount() do
+			local minion = Game.Minion(i)
+			if H.team == 100 then
+				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_ChaosMinionMelee" then
+					count = count + 1
+				end
+			elseif H.team == 200 then
+				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_OrderMinionRMelee" then
+					count = count + 1
+				end
+			end
+		end
+	elseif Type == "siege" then
+		local minion = 0
+		for i = 0, Game.MinionCount() do
+			local minion = Game.Minion(i)
+			if H.team == 100 then
+				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_ChaosMinionSiege" then
+					count = count + 1
+				end
+			elseif H.team == 200 then
+				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_OrderMinionSiege" then
+					count = count + 1
+				end
+			end
+		end
+	elseif Type == "super" then
+		local minion = 0
+		for i = 0, Game.MinionCount() do
+			local minion = Game.Minion(i)
+			if H.team == 100 then
+				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_ChaosMinionSuper" then
+					count = count + 1
+				end
+			elseif H.team == 200 then
+				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_OrderMinionSuper" then
+					count = count + 1
+				end
+			end
+		end
+	end
+	return count
+end
+
 function Combo()
+	if H.activeSpell.valid then return end
+
 	castXstate = 1
 	OrbState("Global", true)
 	if Target((QRange()), "damage") == nil then
@@ -485,13 +592,13 @@ function Combo()
 		if not EnemyOk(target) then return end
 		if NeedLifesteal(H, QRange()) then return end
 		if target ~= nil then
-			if H:GetSpellData(0).toggleState == 1 and math.sqrt(DistTo(target.pos, H.pos)) > 625 and math.sqrt(DistTo(target.pos, H.pos)) <= QRange() then
+			if H:GetSpellData(0).toggleState == 1 and math.sqrt(DistTo(target.pos, H.pos)) > 650 and math.sqrt(DistTo(target.pos, H.pos)) <= QRange() then
 				if H.mana < 20 then return end
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastOnly(HK_Q)
 				end
-			elseif H:GetSpellData(0).toggleState == 2 and math.sqrt(DistTo(target.pos, H.pos)) <= 625 then
+			elseif H:GetSpellData(0).toggleState == 2 and math.sqrt(DistTo(target.pos, H.pos)) <= 650 then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastOnly(HK_Q)
@@ -502,22 +609,22 @@ function Combo()
 	if Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
 		local target = Target(W.range, "easy")
 		if target ~= nil then
-			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+180) and not EnemyComing(target) then
+			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+300) and not EnemyComing(target) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+150) and target.ms > H.ms and not EnemyComing(target) then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+300) and target.ms > H.ms and not EnemyComing(target) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > 1100 and EnemiesAround(W.range) == 1 and not EnemyComing(target)then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > 1100 and EnemiesAround(2000) == 1 and not EnemyComing(target)then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+100) and EnemiesAround(W.range-250) == 1 and AbleCC(target) then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+300) and EnemiesAround(W.range-200) == 1 and AbleCC(target) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
@@ -534,16 +641,16 @@ function Combo()
 					OrbState("Global", true)
 					CastX(2, target, 0.2)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) < (H.range * 0.4) then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) < ((H.range+130) * 0.25) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 						CastX(2, target, 0.2)
 				end
-			elseif EnemyComing(target) and EnemiesCloseCanAttack >= 3 then
+			--[[elseif EnemyComing(target) and EnemiesCloseCanAttack >= 3 then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(2, target, 0.2)
-				end
+				end]]
 			end
 		end
 	end
@@ -554,6 +661,7 @@ function Combo()
 end
 
 function Harass()
+	if H.activeSpell.valid then return end
 	castXstate = 1
 	OrbState("Global", true)
 	if target == nil then
@@ -635,40 +743,50 @@ function Harass()
 			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > 1100 and EnemiesAround(W.range) == 1 then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
-					CastX(1, target, 0.15)
+					CastX(1, target, 0.15, 0)
 				end
 			end
 		end
 	end
 end
-
+--SRU_OrderMinionSiege
+--SRU_OrderMinionRanged
+--SRU_OrderMinionMelee
+--SRU_OrderMinionSuper
+--SRU_ChaosMinionRanged
+--SRU_ChaosMinionMelee
+--SRU_ChaosMinionSiege
+--SRU_ChaosMinionSuper
 function Laneclear()
+	if H.activeSpell.valid then return end
 	castXstate = 1
 	OrbState("Global", true)
+	Force(nil)
 	if Menu.Laneclear.UseQ:Value() then
-		--[[local Count = 0
-		for i = 0, Game.MinionCount() do
-			local target = Game.Minion(i)
-			if math.sqrt(DistTo(target.pos, H.pos)) <= QRange() then
-				Count = Count + 1
+		--[[if MinionNumber(QRange(), "siege") > 0 then	
+			if H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 then
+				CastOnly(HK_Q)
+			elseif H:GetSpellData(0).toggleState == 1 then
+				for i = 0, Game.MinionCount() do
+					local target = Game.Minion(i)
+					if H.team == 100 and target.charName == "SRU_ChaosMinionSiege" then
+						Force(target)
+						break
+					elseif H.team == 200 and target.charName == "SRU_OrderMinionSiege" then
+						Force(target)
+						break
+					end
+				end
 			end
-		end
-		if Count >= 3 and H:GetSpellData(0).toggleState == 1 and EnemiesAround() and Game.CanUseSpell(0) == 0 then
-			OrbState("Global", true)
-			CastOnly(HK_Q)
-		elseif H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 and Count < 3 then
-			OrbState("Global", true)
-			CastOnly(HK_Q)
 		end]]
 		if H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 then
-			OrbState("Global", true)
 			CastOnly(HK_Q)
 		end
 	end
-	--Finir le waveclear
 end
 
 function Jungleclear()
+	if H.activeSpell.valid then return end
 	castXstate = 1
 	OrbState("Global", true)
 	if Menu.Laneclear.UseQ:Value() then
@@ -681,6 +799,7 @@ function Jungleclear()
 end
 
 function Lasthit()
+	if H.activeSpell.valid then return end
 	castXstate = 1
 	OrbState("Global", true)
 	if Menu.Lasthit.UseQ:Value() then
@@ -693,6 +812,7 @@ function Lasthit()
 end
 
 function Flee()
+	if H.activeSpell.valid then return end
 	OrbState("Movement", true)
 	OrbState("Attack", false)
 	--Ajouter buff maitrise de move speed
