@@ -48,8 +48,8 @@ Menu.Combo:MenuElement({id = "RPress", name = "Semi-Auto R (only if OnScreen tho
 --Menu.Combo:MenuElement({id = "Usetrkt", name = "Use trinket in bush", value = true, leftIcon = TKIcon})
 
 --Harass
-Menu.Harass:MenuElement({id = "UseQ", name = "Use Q (bêta)", value = true, leftIcon = QIcon})
-Menu.Harass:MenuElement({id = "UseW", name = "Use W (bêta)", value = true, leftIcon = WIcon})
+Menu.Harass:MenuElement({id = "UseQ", name = "Use Q (beta)", value = true, leftIcon = QIcon})
+Menu.Harass:MenuElement({id = "UseW", name = "Use W (beta)", value = true, leftIcon = WIcon})
 --Laneclear
 Menu.Laneclear:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
 --Lasthit
@@ -514,6 +514,28 @@ function Force(target)
 	end
 end
 
+function EnemiesForQ()
+	local count = 0
+	for i = 0, Game.HeroCount() do
+		local target = Game.Hero(i)
+		if target.isEnemy and math.sqrt(DistTo(target.pos, H.pos)) > 655 and math.sqrt(DistTo(target.pos, H.pos)) < 2000 then
+			local count = count + 1
+		end
+	end
+	return count
+end
+
+function TurretAround(range)
+	local count = 0
+	for i = 0, Game.TurretCount() do
+		local turret = Game.Turret(i)
+		if turret.isEnemy and math.sqrt(DistTo(turret.pos, H.pos)) <= range then
+			count = count + 1
+		end
+	end
+	return count
+end
+
 --SRU_OrderMinionSiege
 --SRU_OrderMinionRanged
 --SRU_OrderMinionMelee
@@ -530,7 +552,7 @@ function MinionNumber(range, Type)
 		local minion = 0
 		for i = 0, Game.MinionCount() do
 			local minion = Game.Minion(i)
-			if DistTo(minion.pos, H.pos) < range then
+			if math.sqrt(DistTo(minion.pos, H.pos)) < range then
 				count = count + 1
 			end
 		end
@@ -539,11 +561,11 @@ function MinionNumber(range, Type)
 		for i = 0, Game.MinionCount() do
 			local minion = Game.Minion(i)
 			if H.team == 100 then
-				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_ChaosMinionRanged" then
+				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_ChaosMinionRanged" then
 					count = count + 1
 				end
 			elseif H.team == 200 then
-				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_OrderMinionRanged" then
+				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_OrderMinionRanged" then
 					count = count + 1
 				end
 			end
@@ -553,11 +575,11 @@ function MinionNumber(range, Type)
 		for i = 0, Game.MinionCount() do
 			local minion = Game.Minion(i)
 			if H.team == 100 then
-				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_ChaosMinionMelee" then
+				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_ChaosMinionMelee" then
 					count = count + 1
 				end
 			elseif H.team == 200 then
-				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_OrderMinionRMelee" then
+				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_OrderMinionRMelee" then
 					count = count + 1
 				end
 			end
@@ -567,11 +589,11 @@ function MinionNumber(range, Type)
 		for i = 0, Game.MinionCount() do
 			local minion = Game.Minion(i)
 			if H.team == 100 then
-				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_ChaosMinionSiege" then
+				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_ChaosMinionSiege" then
 					count = count + 1
 				end
 			elseif H.team == 200 then
-				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_OrderMinionSiege" then
+				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_OrderMinionSiege" then
 					count = count + 1
 				end
 			end
@@ -581,11 +603,11 @@ function MinionNumber(range, Type)
 		for i = 0, Game.MinionCount() do
 			local minion = Game.Minion(i)
 			if H.team == 100 then
-				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_ChaosMinionSuper" then
+				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_ChaosMinionSuper" then
 					count = count + 1
 				end
 			elseif H.team == 200 then
-				if DistTo(minion.pos, H.pos) < range and minion.charName == "SRU_OrderMinionSuper" then
+				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_OrderMinionSuper" then
 					count = count + 1
 				end
 			end
@@ -599,7 +621,7 @@ function Combo()
 
 	castXstate = 1
 	OrbState("Global", true)
-	if Target((QRange()), "damage") == nil then
+	if Target((QRange()), "damage") == nil or EnemiesForQ() >= 1 then
 		if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 then 
 			if H.attackData.state ~= 2 then
 				OrbState("Global", true)
@@ -662,7 +684,7 @@ function Combo()
 					OrbState("Global", true)
 					CastX(2, target, 0.2)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) < ((H.range+130) * 0.3) and EnemyComing(target) then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) < ((H.range+130) * 0.2) and EnemyComing(target) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 						CastX(2, target, 0.2)
@@ -770,26 +792,35 @@ function Harass()
 		end
 	end
 end
---SRU_OrderMinionSiege
---SRU_OrderMinionRanged
---SRU_OrderMinionMelee
---SRU_OrderMinionSuper
---SRU_ChaosMinionRanged
---SRU_ChaosMinionMelee
---SRU_ChaosMinionSiege
---SRU_ChaosMinionSuper
+
 function Laneclear()
 	if H.activeSpell.valid then return end
 	castXstate = 1
 	OrbState("Global", true)
 	Force(nil)
 	if Menu.Laneclear.UseQ:Value() then
-		--[[if MinionNumber(QRange(), "siege") > 0 then	
+		if TurretAround(655) >= 1 then
 			if H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 then
-				CastOnly(HK_Q)
-			elseif H:GetSpellData(0).toggleState == 1 then
+				if H.attackData.state ~= 2 then
+					OrbState("Global", true)
+					CastOnly(HK_Q)
+				end
+			end
+			return
+		end
+		if MinionNumber(QRange(), "siege") > 1 or MinionNumber(QRange(), "ranged") >= 5 or MinionNumber(QRange(), "melee") >= 5 then	
+			if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 then
+				if H.attackData.state ~= 2 then
+					OrbState("Global", true)
+					CastOnly(HK_Q)
+				end
+			elseif H:GetSpellData(0).toggleState == 2 then
 				for i = 0, Game.MinionCount() do
 					local target = Game.Minion(i)
+					if HealthPred(target, (H.attackData.windDownTime + (ping/1000))) <= 0 then 
+						Force(nil)
+						return
+					end
 					if H.team == 100 and target.charName == "SRU_ChaosMinionSiege" then
 						Force(target)
 						break
@@ -799,9 +830,131 @@ function Laneclear()
 					end
 				end
 			end
-		end]]
-		if H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 then
-			CastOnly(HK_Q)
+		elseif MinionNumber(QRange(), "siege") == 1 then	
+			if H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 then
+				if H.attackData.state ~= 2 then
+					OrbState("Global", true)
+					CastOnly(HK_Q)
+				end
+			elseif H:GetSpellData(0).toggleState == 1 then
+				for i = 0, Game.MinionCount() do
+					local target = Game.Minion(i)
+					if target.health < (H.totalDamage*2.5) or H.attackSpeed > 1 or H.critChance >= 40 then
+						if HealthPred(target, (H.attackData.windDownTime + (ping/1000))) <= 0 then 
+							Force(nil)
+							return
+						end
+						if H.team == 100 and target.charName == "SRU_ChaosMinionSiege" then
+							Force(target)
+							break
+						elseif H.team == 200 and target.charName == "SRU_OrderMinionSiege" then
+							Force(target)
+							break
+						end
+					end
+				end
+			end
+		elseif MinionNumber(QRange(), "super") > 1 then	
+			if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 then
+				if H.attackData.state ~= 2 then
+					OrbState("Global", true)
+					CastOnly(HK_Q)
+				end
+			elseif H:GetSpellData(0).toggleState == 2 then
+				for i = 0, Game.MinionCount() do
+					local target = Game.Minion(i)
+					if target.health < (H.totalDamage*2.5) or H.attackSpeed > 1 or H.critChance >= 40 then
+						if HealthPred(target, (H.attackData.windDownTime + (ping/1000))) <= 0 then 
+							Force(nil)
+							return
+						end
+						if H.team == 100 and target.charName == "SRU_ChaosMinionSuper" then
+							Force(target)
+							break
+						elseif H.team == 200 and target.charName == "SRU_OrderMinionSuper" then
+							Force(target)
+							break
+						end
+					end
+				end
+			end
+		elseif MinionNumber(QRange(), "ranged") > 2 then	
+			if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 then
+				if H.attackData.state ~= 2 then
+					OrbState("Global", true)
+					CastOnly(HK_Q)
+				end
+			elseif H:GetSpellData(0).toggleState == 2 then
+				for i = 0, Game.MinionCount() do
+					local target = Game.Minion(i)
+					if target.health < (H.totalDamage*2.5) or H.attackSpeed > 1 or H.critChance >= 40 then
+						if HealthPred(target, (H.attackData.windDownTime + (ping/1000))) <= 0 then 
+							Force(nil)
+							return
+						end
+						if H.team == 100 and target.charName == "SRU_ChaosMinionRanged" then
+							Force(target)
+							break
+						elseif H.team == 200 and target.charName == "SRU_OrderMinionRanged" then
+							Force(target)
+							break
+						end
+					end
+				end
+			end
+		elseif MinionNumber(QRange(), "melee") > 2 then	
+			if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 then
+				if H.attackData.state ~= 2 then
+					OrbState("Global", true)
+					CastOnly(HK_Q)
+				end
+			elseif H:GetSpellData(0).toggleState == 2 then
+				for i = 0, Game.MinionCount() do
+					local target = Game.Minion(i)
+					if target.health < (H.totalDamage*2.5) or H.attackSpeed > 1 or H.critChance >= 40 then
+						if HealthPred(target, (H.attackData.windDownTime + (ping/1000))) <= 0 then 
+							Force(nil)
+							return
+						end
+						if H.team == 100 and target.charName == "SRU_ChaosMinionMelee" then
+							Force(target)
+							break
+						elseif H.team == 200 and target.charName == "SRU_OrderMinionMelee" then
+							Force(target)
+							break
+						end
+					end
+				end
+			end
+		elseif (MinionNumber(QRange(), "melee") + MinionNumber(QRange(), "ranged")) > 3 then	
+			if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 then
+				if H.attackData.state ~= 2 then
+					OrbState("Global", true)
+					CastOnly(HK_Q)
+				end
+			elseif H:GetSpellData(0).toggleState == 2 then
+				for i = 0, Game.MinionCount() do
+					local target = Game.Minion(i)
+					if target.health < (H.totalDamage*2.5) or H.attackSpeed > 1 or H.critChance >= 40 then
+						if HealthPred(target, (H.attackData.windDownTime + (ping/1000))) <= 0 then 
+							Force(nil)
+							return
+						end
+						if H.team == 100 and target.charName == "SRU_ChaosMinionMelee" then
+							Force(target)
+							break
+						elseif H.team == 200 and target.charName == "SRU_OrderMinionMelee" then
+							Force(target)
+							break
+						end
+					end
+				end
+			end
+		elseif H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 then
+			if H.attackData.state ~= 2 then
+					OrbState("Global", true)
+					CastOnly(HK_Q)
+				end
 		end
 	end
 end
