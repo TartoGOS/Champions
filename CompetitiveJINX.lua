@@ -619,6 +619,7 @@ end
 function Combo()
 	if H.activeSpell.valid then return end
 
+	Force(nil)
 	castXstate = 1
 	OrbState("Global", true)
 	if Target((QRange()), "damage") == nil or EnemiesForQ() >= 1 then
@@ -704,6 +705,7 @@ function Combo()
 end
 
 function Harass()
+	Force(nil)
 	if H.activeSpell.valid then return end
 	castXstate = 1
 	OrbState("Global", true)
@@ -961,6 +963,7 @@ end
 
 function Jungleclear()
 	if H.activeSpell.valid then return end
+	Force(nil)
 	castXstate = 1
 	OrbState("Global", true)
 	if Menu.Laneclear.UseQ:Value() then
@@ -974,6 +977,7 @@ end
 
 function Lasthit()
 	if H.activeSpell.valid then return end
+	Force(nil)
 	castXstate = 1
 	OrbState("Global", true)
 	if Menu.Lasthit.UseQ:Value() then
@@ -986,6 +990,7 @@ function Lasthit()
 end
 
 function Flee()
+	Force(nil)
 	if H.activeSpell.valid then return end
 	OrbState("Movement", true)
 	OrbState("Attack", false)
