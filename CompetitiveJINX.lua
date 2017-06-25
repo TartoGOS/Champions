@@ -36,7 +36,7 @@ Menu:MenuElement({id = "ESet", name = "E Settings", type = MENU})
 --Menu:MenuElement({id = "Baseult", name = "Toggle", type = MENU})
 Menu:MenuElement({id = "Items", name = "Items usage", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
-Menu:MenuElement({name = "Version : 1.05", type = SPACE})
+Menu:MenuElement({name = "Version : 1.1", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE, rightIcon = Tarto})
 --Combo
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
@@ -63,7 +63,7 @@ Menu.Killsteal:MenuElement({id = "UseR", name = "Use R", value = true, leftIcon 
 Menu.ESet:MenuElement({id = "ECC", name = "Auto-use E on CC", value = false, leftIcon = EIcon})
 --Menu.ESet:MenuElement({id = "ETelep", name = "Auto-use E on teleport", value = false, leftIcon = EIcon})
 --Baseult
---Menu.Baseult:MenuElement({id = "UseQ", name = "Use Baseult", toggle = true, key = string.byte("U"), leftIcon = RIcon})
+--Menu.Baseult:MenuElement({id = "UseR", name = "Use Baseult", toggle = true, key = string.byte("U"), leftIcon = RIcon})
 --Items
 --Menu.Items:MenuElement({id = "UseBotrk", name = "Use Botrk", value = true, leftIcon = BIcon})
 --Drawings
