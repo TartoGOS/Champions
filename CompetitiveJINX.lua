@@ -662,7 +662,7 @@ function Combo()
 					OrbState("Global", true)
 					CastX(2, target, 0.2)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) < ((H.range+130) * 0.4) then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) < ((H.range+130) * 0.3) and EnemyComing(target) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 						CastX(2, target, 0.2)
