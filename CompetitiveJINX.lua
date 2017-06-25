@@ -2,8 +2,6 @@ if myHero.charName ~= "Jinx" then return end
 
 require 'Eternal Prediction'
 require 'DamageLib'
---OnUpdateBuff(function(unit,buff) --get triggered when someone gets new buff --your code here end)
---OnRemoveBuff(function(unit,buff) --get triggered when someone's buff is expired --your code here end)
 
 class "Jinx"
 
