@@ -622,7 +622,7 @@ function Combo()
 	Force(nil)
 	castXstate = 1
 	OrbState("Global", true)
-	if Target((QRange()), "damage") == nil or EnemiesForQ() >= 1 then
+	if Target((QRange()), "damage") == nil then
 		if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 then 
 			if H.attackData.state ~= 2 then
 				OrbState("Global", true)
