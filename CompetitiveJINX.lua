@@ -229,6 +229,7 @@ function OrbState(state, bool)
 end
 
 local castXstate = 1
+local castXtick = 0
 function CastX(spell, target, hitchance, minion, hero)
 	if H.activeSpell.valid then return end
 	local Custom = {delay = (ping/1000), spell = spell, minion = minion, hero = hero, hitchance = hitchance, hotkey = nil, pred = nil, Delay = nil}
@@ -250,7 +251,7 @@ function CastX(spell, target, hitchance, minion, hero)
 	end
 	OrbState("Attack", false)
 	if target ~= nil and Custom.pred ~= nil and Custom.hotkey ~= nil and not target.dead then
-		if castXstate == 1 then
+		if castXstate == 1 and (GetTickCount() - castXtick) > 25 then
 			if H.attackData == 2 then return end
 			castXstate = 2
 			local mLocation = nil
@@ -270,6 +271,7 @@ function CastX(spell, target, hitchance, minion, hero)
 					DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay/2 + Custom.delay))
 					DelayAction(function() OrbState("Global", true) end, Custom.delay)
 					castXstate = 1
+					castXtick = GetTickCount()
 				end
 			elseif Custom.spell == 2 then
 				if HealthPred(target, Custom.Delay + 0.1) < 1 then return end
@@ -286,6 +288,7 @@ function CastX(spell, target, hitchance, minion, hero)
 					DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay/2 + Custom.delay))
 					DelayAction(function() OrbState("Global", true) end, Custom.delay)
 					castXstate = 1
+					castXtick = GetTickCount()
 				end
 			elseif Custom.spell == 3 then
 				if HealthPred(target, Custom.Delay + 0.1) < 1 then return end
@@ -302,6 +305,7 @@ function CastX(spell, target, hitchance, minion, hero)
 					DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay/2 + Custom.delay))
 					DelayAction(function() OrbState("Global", true) end, Custom.delay)
 					castXstate = 1
+					castXtick = GetTickCount()
 				end
 			end
 		elseif castXstate == 2 then return end
@@ -310,10 +314,27 @@ end
 
 function CastOnly(spell)
 	if H.activeSpell.valid then return end
-	local CustomDelay = math.random(0.01, 0.09)
-	if ((Game.Timer() - H.attackData.endTime) < (0.45*H.attackData.windDownTime)) then
-		DelayAction(function() Control.KeyDown(spell) end, CustomDelay)
-		DelayAction(function() Control.KeyUp(spell) end, CustomDelay)
+	local CustomDelay = ping/1000
+	if _G.SDK then
+		if ((Game.Timer() - H.attackData.endTime) < (0.45*H.attackData.windDownTime) and (GetTickCount() - castXtick) > 25) then
+			if H:GetSpellData(0).toggleState == 1 then
+				DelayAction(function() OrbState("Attack", false) end, CustomDelay)
+				DelayAction(function() Control.KeyDown(spell) end, CustomDelay)
+				DelayAction(function() Control.KeyUp(spell) end, CustomDelay)
+				DelayAction(function() OrbState("Attack", true) end, H.attackData.windDownTime)
+				castXtick = GetTickCount()
+			elseif H:GetSpellData(0).toggleState == 2 then
+				DelayAction(function() Control.KeyDown(spell) end, CustomDelay)
+				DelayAction(function() Control.KeyUp(spell) end, CustomDelay)
+				castXtick = GetTickCount()
+			end
+		end
+	elseif _G.EOWLoaded then
+		if ((Game.Timer() - H.attackData.endTime) < (0.45*H.attackData.windDownTime) and (GetTickCount() - castXtick) > 25) then
+			DelayAction(function() Control.KeyDown(spell) end, CustomDelay)
+			DelayAction(function() Control.KeyUp(spell) end, CustomDelay)
+			castXtick = GetTickCount()
+		end
 	end
 end
 
@@ -372,7 +393,7 @@ function AbleCC(who)
 	if who.buffCount == 0 then return end
 	for i = 0, who.buffCount do
 		local buffs = who:GetBuff(i)
-		if buffs.type == (5 or 8 or 11 or 22 or 24 or 29 or 30) then
+		if buffs.type == (5 or 8 or 11 or 22 or 24 or 29 or 30) and buffs.expireTime > 0.9 then
 			return true
 		end
 	end
@@ -609,12 +630,12 @@ function Combo()
 	if Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
 		local target = Target(W.range, "easy")
 		if target ~= nil then
-			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+300) and not EnemyComing(target) then
+			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+150) and not EnemyComing(target) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+300) and target.ms > H.ms and not EnemyComing(target) then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+150) and target.ms > H.ms and not EnemyComing(target) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
@@ -624,7 +645,7 @@ function Combo()
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+300) and EnemiesAround(W.range-200) == 1 and AbleCC(target) then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+180) and EnemiesAround(W.range-200) == 1 and AbleCC(target) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
@@ -641,7 +662,7 @@ function Combo()
 					OrbState("Global", true)
 					CastX(2, target, 0.2)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) < ((H.range+130) * 0.25) then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) < ((H.range+130) * 0.4) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 						CastX(2, target, 0.2)
