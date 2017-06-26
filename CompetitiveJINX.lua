@@ -22,7 +22,9 @@ local H = myHero
 local ColorY = Draw.Color(255, 255, 255, 100)
 local ColorZ = Draw.Color(255, 255, 200, 100)
 local ping = Game.Latency()
-local SpellTick = 0 --soon
+local castXstate = 1
+local castXtick = 0
+local castOnlytick = 0
 print("Competitive Jinx Loaded.")
 --Menus
 local Menu = MenuElement({id = "Menu", name = "Jinx", type = MENU, leftIcon = HeroIcon})
@@ -36,15 +38,17 @@ Menu:MenuElement({id = "ESet", name = "E Settings", type = MENU})
 --Menu:MenuElement({id = "Baseult", name = "Toggle", type = MENU})
 Menu:MenuElement({id = "Items", name = "Items usage", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
-Menu:MenuElement({name = "Version : 1.1", type = SPACE})
+Menu:MenuElement({name = "Version : 1.15", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE, rightIcon = Tarto})
 --Combo
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
 Menu.Combo:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = WIcon})
-Menu.Combo:MenuElement({id = "UseE", name = "Use E", value = false	, leftIcon = EIcon})
+Menu.Combo:MenuElement({id = "UseE", name = "Use E", value = true	, leftIcon = EIcon})
+Menu.Combo:MenuElement({id = "UseEOnly", name = "Use E on CC ONLY", value = true	, leftIcon = EIcon})
+Menu.Combo:MenuElement({id = "UseEMana", name = "E mana min", value = 40, min = 0, max = 100, step = 5, leftIcon = EIcon})
 --Menu.Combo:MenuElement({id = "UseR", name = "Use R", value = true, leftIcon = RIcon})
 --Menu.Combo:MenuElement({id = "MinR", name = "Minimum targets to ultimate", value = 3, min = 1, max = 5, step = 1, leftIcon = RIcon})
-Menu.Combo:MenuElement({id = "RPress", name = "Semi-Auto R (only if OnScreen tho", key = string.byte("T"), leftIcon = RIcon})
+Menu.Combo:MenuElement({id = "RPress", name = "Semi-Auto R (only if OnScreen)", key = string.byte("T"), leftIcon = RIcon})
 --Menu.Combo:MenuElement({id = "Usetrkt", name = "Use trinket in bush", value = true, leftIcon = TKIcon})
 
 --Harass
@@ -228,8 +232,6 @@ function OrbState(state, bool)
 	end
 end
 
-local castXstate = 1
-local castXtick = 0
 function CastX(spell, target, hitchance, minion, hero)
 	if H.activeSpell.valid then return end
 	local Custom = {delay = (ping/1000), spell = spell, minion = minion, hero = hero, hitchance = hitchance, hotkey = nil, pred = nil, Delay = nil}
@@ -249,9 +251,9 @@ function CastX(spell, target, hitchance, minion, hero)
 		Custom.hotkey = HK_R
 		Custom.Delay = R.delay
 	end
-	OrbState("Attack", false)
+	DelayAction(function() OrbState("Attack", false) end, Custom.delay)
 	if target ~= nil and Custom.pred ~= nil and Custom.hotkey ~= nil and not target.dead then
-		if castXstate == 1 and (GetTickCount() - castXtick) > 25 then
+		if castXstate == 1 then
 			if H.attackData == 2 then return end
 			castXstate = 2
 			local mLocation = nil
@@ -261,10 +263,10 @@ function CastX(spell, target, hitchance, minion, hero)
 				if not target.toScreen.onScreen then
 					return
 				end
-				if prediction and prediction.hitChance >= Custom.hitchance and prediction:mCollision() == Custom.minion and prediction:hCollision() == Custom.hero and not target.dead then
+				if prediction and prediction.hitChance >= Custom.hitchance and prediction:mCollision() == Custom.minion and prediction:hCollision() == Custom.hero and not target.dead and (GetTickCount() - castXtick) > 25 then
 					mLocation = mousePos
 					if mLocation == nil then return end
-					DelayAction(function() OrbState("Movement", false) end, Custom.delay)
+					DelayAction(function() OrbState("Movement", false) end, Custom.delay*2)
 					DelayAction(function() Control.SetCursorPos(prediction.castPos) end, Custom.delay)
 					DelayAction(function() Control.KeyDown(Custom.hotkey) end, Custom.delay)
 					DelayAction(function() Control.KeyUp(Custom.hotkey) end, Custom.delay)
@@ -278,10 +280,10 @@ function CastX(spell, target, hitchance, minion, hero)
 				if not target.toScreen.onScreen then
 					return
 				end
-				if prediction and prediction.hitChance >= Custom.hitchance and not target.dead then
+				if prediction and prediction.hitChance >= Custom.hitchance and not target.dead and (GetTickCount() - castXtick) > 25 then
 					mLocation = mousePos
 					if mLocation == nil then return end
-					DelayAction(function() OrbState("Movement", false) end, Custom.delay)
+					DelayAction(function() OrbState("Movement", false) end, Custom.delay*2)
 					DelayAction(function() Control.SetCursorPos(prediction.castPos) end, Custom.delay)
 					DelayAction(function() Control.KeyDown(Custom.hotkey) end, Custom.delay)
 					DelayAction(function() Control.KeyUp(Custom.hotkey) end, Custom.delay)
@@ -295,10 +297,10 @@ function CastX(spell, target, hitchance, minion, hero)
 				if not target.toScreen.onScreen then
 					return
 				end
-				if prediction and prediction.hitChance >= Custom.hitchance and prediction:hCollision() == Custom.hero and not target.dead then
+				if prediction and prediction.hitChance >= Custom.hitchance and prediction:hCollision() == Custom.hero and not target.dead and (GetTickCount() - castXtick) > 25 then
 					mLocation = mousePos
 					if mLocation == nil then return end
-					DelayAction(function() OrbState("Movement", false) end, Custom.delay)
+					DelayAction(function() OrbState("Movement", false) end, Custom.delay*2)
 					DelayAction(function() Control.SetCursorPos(prediction.castPos) end, Custom.delay)
 					DelayAction(function() Control.KeyDown(Custom.hotkey) end, Custom.delay)
 					DelayAction(function() Control.KeyUp(Custom.hotkey) end, Custom.delay)
@@ -318,22 +320,22 @@ function CastOnly(spell)
 	if _G.SDK then
 		if ((Game.Timer() - H.attackData.endTime) < (0.45*H.attackData.windDownTime) and (GetTickCount() - castXtick) > 25) then
 			if H:GetSpellData(0).toggleState == 1 then
-				DelayAction(function() OrbState("Attack", false) end, CustomDelay)
+				DelayAction(function() OrbState("Attack", false) end, CustomDelay*2)
 				DelayAction(function() Control.KeyDown(spell) end, CustomDelay)
 				DelayAction(function() Control.KeyUp(spell) end, CustomDelay)
 				DelayAction(function() OrbState("Attack", true) end, H.attackData.windDownTime)
-				castXtick = GetTickCount()
+				castOnlytick = GetTickCount()
 			elseif H:GetSpellData(0).toggleState == 2 then
-				DelayAction(function() Control.KeyDown(spell) end, CustomDelay)
+				DelayAction(function() Control.KeyDown(spell) end, CustomDelay*2)
 				DelayAction(function() Control.KeyUp(spell) end, CustomDelay)
-				castXtick = GetTickCount()
+				castOnlytick = GetTickCount()
 			end
 		end
 	elseif _G.EOWLoaded then
 		if ((Game.Timer() - H.attackData.endTime) < (0.45*H.attackData.windDownTime) and (GetTickCount() - castXtick) > 25) then
 			DelayAction(function() Control.KeyDown(spell) end, CustomDelay)
 			DelayAction(function() Control.KeyUp(spell) end, CustomDelay)
-			castXtick = GetTickCount()
+			castOnlytick = GetTickCount()
 		end
 	end
 end
@@ -373,9 +375,9 @@ end
 function EnemyComing(target)
 	if target == nil then return end
 	local first = { dist = math.sqrt(DistTo(target.pos, H.pos)), Time = Game.Timer()}
-	if Game.Timer() - first.Time > 0.1 then 
+	if Game.Timer() - first.Time > 0.4 then 
 		local seconde = { dist = math.sqrt(DistTo(target.pos, H.pos))}
-		if first.dist - seconde.dist > 0 then return true 
+		if first.dist > seconde.dist then return true 
 		else end
 	end
 end
@@ -636,13 +638,13 @@ function Combo()
 		if not EnemyOk(target) then return end
 		if NeedLifesteal(H, QRange()) then return end
 		if target ~= nil then
-			if H:GetSpellData(0).toggleState == 1 and math.sqrt(DistTo(target.pos, H.pos)) > 650 and math.sqrt(DistTo(target.pos, H.pos)) <= QRange() then
+			if H:GetSpellData(0).toggleState == 1 and math.sqrt(DistTo(target.pos, H.pos)) >= 655 and math.sqrt(DistTo(target.pos, H.pos)) <= QRange() then
 				if H.mana < 20 then return end
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastOnly(HK_Q)
 				end
-			elseif H:GetSpellData(0).toggleState == 2 and math.sqrt(DistTo(target.pos, H.pos)) <= 650 then
+			elseif H:GetSpellData(0).toggleState == 2 and math.sqrt(DistTo(target.pos, H.pos)) < 650 then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastOnly(HK_Q)
@@ -653,12 +655,12 @@ function Combo()
 	if Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
 		local target = Target(W.range, "easy")
 		if target ~= nil then
-			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+150) and not EnemyComing(target) then
+			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+130) and not EnemyComing(target) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+150) and target.ms > H.ms and not EnemyComing(target) then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+130) and target.ms > H.ms and not EnemyComing(target) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
@@ -677,7 +679,7 @@ function Combo()
 		end
 	end
 
-	if Menu.Combo.UseE:Value() and Game.CanUseSpell(2) == 0 then
+	if Menu.Combo.UseE:Value() and Game.CanUseSpell(2) == 0 and (H.mana*100)/H.maxMana >= Menu.Combo.UseEMana:Value() then
 		local target = Target(E.range, "distance")
 		if target ~= nil then
 			if AbleCC(target) then
@@ -685,7 +687,7 @@ function Combo()
 					OrbState("Global", true)
 					CastX(2, target, 0.2)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) < ((H.range+130) * 0.2) and EnemyComing(target) then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) < (655 * 0.2) and EnemyComing(target) and Menu.Combo.UseEOnly:Value() == false then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 						CastX(2, target, 0.2)
@@ -705,90 +707,61 @@ function Combo()
 end
 
 function Harass()
+	if Game.Timer() < 91 then return end
 	Force(nil)
 	if H.activeSpell.valid then return end
 	castXstate = 1
 	OrbState("Global", true)
-	if target == nil then
-		if H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 then 
-			if H.attackData.state ~= 2 then
-				OrbState("Global", true)
-				CastOnly(HK_Q)
-			end
-		end
-	end
 	if Menu.Harass.UseQ:Value() and Game.CanUseSpell(0) == 0 then
-		if _G.SDK then
-			for i = 0, Game.MinionCount() do
-				local minion = Game.Minion(i)
-				if math.sqrt(DistTo(minion.pos, H.pos)) < 640 then 
-					if _G.SDK.HealthPrediction:GetPrediction(minion, Q.delay) then
-						if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 then 
-							if H.attackData.state ~= 2 then
-								OrbState("Global", true)
-								CastOnly(HK_Q)
-								return
-							end
-						end
-					end
-				end
-			end
-		elseif _G.EOWLoaded then
-			for i = 0, Game.MinionCount() do
-				local minion = Game.Minion(i)
-				if math.sqrt(DistTo(minion.pos, H.pos)) < 650 then 
-					if EOW:GetHealthPrediction(minion, Q.delay) then
-						if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 then 
-							if H.attackData.state ~= 2 then
-								OrbState("Global", true)
-								CastOnly(HK_Q)
-								return
-							end
-						end
-					end
-				end
-			end
-		else
-			for i = 0, Game.MinionCount() do
-				local minion = Game.Minion(i)
-				if math.sqrt(DistTo(minion.pos, H.pos)) < 650 then 
-					if GOS:HP_Pred(minion, Q.delay) then
-						if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 then 
-							if H.attackData.state ~= 2 then
-								OrbState("Global", true)
-								CastOnly(HK_Q)
-								return
-							end
-						end
-					end
-				end
-			end
-		end
-		local target = Target(QRange()+50, "damage")
-		if not EnemyOk(target) then return end
-		if NeedLifesteal(H, QRange()) then return end
-		if target ~= nil then
-			if H:GetSpellData(0).toggleState == 1 and math.sqrt(DistTo(target.pos, H.pos)) > 580 and math.sqrt(DistTo(target.pos, H.pos)) <= QRange() then
-				if H.mana < 20 then return end
-				if H.attackData.state ~= 2 then
-					OrbState("Global", true)
-					CastOnly(HK_Q)
-				end
-			elseif H:GetSpellData(0).toggleState == 2 and math.sqrt(DistTo(target.pos, H.pos)) <= 580 then
+		local target = Target(QRange(), "damage")
+		Force(nil)
+		if target == nil then
+			if H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 then 
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastOnly(HK_Q)
 				end
 			end
-		end
-	end
-	if Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
-		local target = Target(W.range, "easy")
-		if target ~= nil then
-			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > 1100 and EnemiesAround(W.range) == 1 then
-				if H.attackData.state ~= 2 then
-					OrbState("Global", true)
-					CastX(1, target, 0.15, 0)
+		elseif target ~= nil then
+			if TurretAround(655) ~= nil then return end
+			for i = 0, Game.MinionCount() do
+				local minion = Game.Minion(i)
+				if math.sqrt(DistTo(minion.pos, H.pos)) <= QRange() and HealthPred(minion, (ping/1000)*2 + H.attackData.windDownTime*2 + H.attackData.windUpTime*2) <= 0 then
+					if H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 then
+						if H.attackData.state ~= 2 then
+							OrbState("Global", true)
+							CastOnly(HK_Q)
+							DelayAction(function() Force(minion) end, ping/1000 + H.attackData.windDownTime)
+							return
+						end
+					elseif H:GetSpellData(0).toggleState == 1 then
+						OrbState("Global", true)
+						Force(minion)
+						return
+					end
+				elseif math.sqrt(DistTo(target.pos, H.pos)) < QRange() then
+					if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 and math.sqrt(DistTo(target.pos, H.pos)) >= 655 then
+						if H.attackData.state ~= 2 then
+							CastOnly(HK_Q)
+							DelayAction(function() Force(target) end, ping/1000 + H.attackData.windDownTime)
+							return
+						end
+					elseif H:GetSpellData(0).toggleState == 2 and math.sqrt(DistTo(target.pos, H.pos)) < 655 then
+						if H.attackData ~= 2 then
+							Force(target)
+							return
+						end
+					end
+				elseif Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
+					local target = Target(W.range, "easy")
+					if target ~= nil then
+						if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > 1100 and EnemiesAround(W.range) == 1 then
+							if H.attackData.state ~= 2 then
+								OrbState("Global", true)
+								CastX(1, target, 0.15, 0)
+							end
+						end
+					end
 				end
 			end
 		end
@@ -796,6 +769,7 @@ function Harass()
 end
 
 function Laneclear()
+	if Game.Timer() < 91 then return end
 	if H.activeSpell.valid then return end
 	castXstate = 1
 	OrbState("Global", true)
@@ -894,12 +868,14 @@ function Laneclear()
 							Force(nil)
 							return
 						end
-						if H.team == 100 and target.charName == "SRU_ChaosMinionRanged" then
-							Force(target)
-							break
-						elseif H.team == 200 and target.charName == "SRU_OrderMinionRanged" then
-							Force(target)
-							break
+						if MinionNumber(100, "ranged") > 1 or MinionNumber(100, "melee") > 1 then
+							if H.team == 100 and target.charName == "SRU_ChaosMinionRanged" then
+								Force(target)
+								break
+							elseif H.team == 200 and target.charName == "SRU_OrderMinionRanged" then
+								Force(target)
+								break
+							end
 						end
 					end
 				end
@@ -918,17 +894,19 @@ function Laneclear()
 							Force(nil)
 							return
 						end
-						if H.team == 100 and target.charName == "SRU_ChaosMinionMelee" then
-							Force(target)
-							break
-						elseif H.team == 200 and target.charName == "SRU_OrderMinionMelee" then
-							Force(target)
-							break
+						if MinionNumber(100, "melee") > 1 or MinionNumber(100, "ranged") > 1 then
+							if H.team == 100 and target.charName == "SRU_ChaosMinionMelee" then
+								Force(target)
+								break
+							elseif H.team == 200 and target.charName == "SRU_OrderMinionMelee" then
+								Force(target)
+								break
+							end
 						end
 					end
 				end
 			end
-		elseif (MinionNumber(QRange(), "melee") + MinionNumber(QRange(), "ranged")) > 3 then	
+		elseif (MinionNumber(QRange(), "melee") + MinionNumber(QRange(), "ranged")) > 6 then	
 			if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
@@ -962,6 +940,7 @@ function Laneclear()
 end
 
 function Jungleclear()
+	if Game.Timer() < 91 then return end
 	if H.activeSpell.valid then return end
 	Force(nil)
 	castXstate = 1
@@ -976,6 +955,7 @@ function Jungleclear()
 end
 
 function Lasthit()
+	if Game.Timer() < 91 then return end
 	if H.activeSpell.valid then return end
 	Force(nil)
 	castXstate = 1
