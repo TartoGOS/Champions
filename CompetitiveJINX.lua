@@ -70,7 +70,7 @@ Menu:MenuElement({id = "ESet", name = "E Settings", type = MENU})
 --Menu:MenuElement({id = "Baseult", name = "Toggle", type = MENU})
 Menu:MenuElement({id = "Items", name = "Items usage", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
-Menu:MenuElement({name = "Version : 1.15", type = SPACE})
+Menu:MenuElement({name = "Version : 1.20", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE, rightIcon = Tarto})
 --Combo
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
