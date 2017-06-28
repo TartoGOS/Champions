@@ -530,7 +530,7 @@ function StealableTarget()
 		if H.activeSpell.valid then return end
 		local target = Target(R.range, "easy")
 		if Target(R.range, "easy") == nil then return end
-		if math.sqrt(DistTo(target.pos, H.pos)) < R.range and math.sqrt(DisTo(target.pos, H.pos)) > QRange() and EnemiesAround(QRange()) == 0 then
+		if math.sqrt(DistTo(target.pos, H.pos)) < R.range and math.sqrt(DistTo(target.pos, H.pos)) > QRange() and EnemiesAround(QRange()) == 0 then
 			if (target.health + target.shieldAD + target.shieldAP) < getdmg("R", target, myHero) then
 				CastX(3, target, 0.15)
 			end
