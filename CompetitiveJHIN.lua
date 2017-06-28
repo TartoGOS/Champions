@@ -45,7 +45,7 @@ Menu:MenuElement({id = "Harass", name = "Harass", type = MENU})
 Menu:MenuElement({id = "Laneclear", name = "Laneclear", type = MENU})
 Menu:MenuElement({id = "Lasthit", name = "Lasthit", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
-Menu:MenuElement({name = "Version : 1.15", type = SPACE})
+Menu:MenuElement({name = "Version : 1.0", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE})
 --Combo
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
