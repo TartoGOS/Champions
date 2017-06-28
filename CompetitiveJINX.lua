@@ -70,7 +70,7 @@ Menu:MenuElement({id = "ESet", name = "E Settings", type = MENU})
 --Menu:MenuElement({id = "Baseult", name = "Toggle", type = MENU})
 Menu:MenuElement({id = "Items", name = "Items usage", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
-Menu:MenuElement({name = "Version : 1.20", type = SPACE})
+Menu:MenuElement({name = "Version : 1.15", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE, rightIcon = Tarto})
 --Combo
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
@@ -662,6 +662,15 @@ end
 
 function Combo()
 	if H.activeSpell.valid then return end
+	if customWvalid ~= 0 then
+		if Game.Timer() - customWvalid <= 0.6 then return end
+	end
+	if customEvalid ~= 0 then
+		if Game.Timer() - customEvalid <= 0.7 then return end
+	end
+	if customRvalid ~= 0 then
+		if Game.Timer() - customEvalid <= 0.6 then return end
+	end
 
 	Force(nil)
 	castXstate = 1
@@ -698,12 +707,12 @@ function Combo()
 	if Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
 		local target = Target(W.range, "easy")
 		if target ~= nil then
-			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+190) and not EnemyComing(target, 30) and EnemiesAround(1700) < 3 then
+			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+160) and not EnemyComing(target, 30) and EnemiesAround(1700) < 3 then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+190) and target.ms > H.ms and not EnemyComing(target, 30) and EnemiesAround(1700) < 3 then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+160) and target.ms > H.ms and not EnemyComing(target, 30) and EnemiesAround(1700) < 3 then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
@@ -713,7 +722,7 @@ function Combo()
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
 				end
-			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+190) and EnemiesAround(W.range-200) == 1 and AbleCC(target) and EnemiesAround(1700) < 3 then
+			elseif math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+160) and EnemiesAround(W.range-200) == 1 and AbleCC(target) and EnemiesAround(1700) < 3 then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, 0.15)
