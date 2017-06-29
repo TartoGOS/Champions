@@ -47,7 +47,7 @@ Menu:MenuElement({id = "Lasthit", name = "Lasthit", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
 Menu:MenuElement({id = "KsW", name = "Use W to Killsteal", value = false, leftIcon = WIcon})
 Menu:MenuElement({id = "AutoW", name = "Use W Auto on CC", value = false, leftIcon = WIcon})
-Menu:MenuElement({name = "Version : 1.0", type = SPACE})
+Menu:MenuElement({name = "Version : 1.05", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE})
 --Combo
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
