@@ -96,9 +96,6 @@ function AATick()
 	elseif H.attackData.state == 3 then
 		AADown = GetTickCount()
 	end
-	if H.attackData.state == 3 then
-		OrbState("Attack", false)
-	end
 end
 
 function HasMoved(target, time)
@@ -252,6 +249,12 @@ end
 
 function CastX(spell, target, hitchance, minion, hero)
 	if H.activeSpell.valid then return end
+	if customWvalid ~= 0 then
+		if Game.Timer() - customWvalid <= 0.75 then return end
+	end
+	if customEvalid ~= 0 then
+		if Game.Timer() - customEvalid <= 0.25 then return end
+	end
 	local Custom = {delay = ping, spell = spell, minion = minion, hero = hero, hitchance = hitchance, hotkey = nil, pred = nil, Delay = nil}
 	if Custom.minion == nil then Custom.minion = 0 end
 	if Custom.hero == nil then Custom.hero = 0 end
@@ -280,11 +283,9 @@ function CastX(spell, target, hitchance, minion, hero)
 					return
 				end
 				if not target.dead and (GetTickCount() - castXtick) > 25 then
-					Control.CastSpell(HK_Q, target)
+					DelayAction(function() Control.CastSpell(HK_Q, target) end, Custom.delay)
 					castXstate = 1
 					castXtick = GetTickCount()
-					ComboTick = GetTickCount()
-					DelayAction(function() OrbState("Global", true) end, Custom.delay)
 				end
 			elseif Custom.spell == 1 then
 				if HealthPred(target, Custom.Delay + 0.1) < 1 then return end
@@ -301,16 +302,15 @@ function CastX(spell, target, hitchance, minion, hero)
 					if target ~= nil then
 						DelayAction(function() Control.SetCursorPos(prediction.castPos) end, Custom.delay)
 						DelayAction(function() Control.KeyDown(Custom.hotkey) end, Custom.delay)
-						customWvalid = Game.Timer()
 						DelayAction(function() Control.KeyUp(Custom.hotkey) end, Custom.delay)
+						customWvalid = Game.Timer()
 						DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay/2 + Custom.delay))
-						DelayAction(function() OrbState("Global", true) end, Custom.delay)
 						castXstate = 1
 						castXtick = GetTickCount()
-						ComboTick = GetTickCount()
+						DelayAction(function() OrbState("Global", true) end, Custom.delay)
 					end
 				end
-			elseif Custom.spell == 2 then
+			elseif Custom.spell == 2 and (Game.Timer() - (ETime + ping + E.delay)) > 10 then
 				if HealthPred(target, Custom.Delay + 0.1) < 1 then return end
 				if not target.toScreen.onScreen then
 					return
@@ -321,17 +321,37 @@ function CastX(spell, target, hitchance, minion, hero)
 					mLocation = mousePos
 					if mLocation == nil then return end
 					DelayAction(function() OrbState("Movement", false) end, Custom.delay)
-					if target ~= nil and Game.Timer() - ETime < 10 then
+					if target ~= nil then
 						DelayAction(function() Control.SetCursorPos(prediction.castPos) end, Custom.delay)
 						DelayAction(function() Control.KeyDown(Custom.hotkey) end, Custom.delay)
-						customEvalid = Game.Timer()
-						ETime = Game.Timer()
 						DelayAction(function() Control.KeyUp(Custom.hotkey) end, Custom.delay)
+						customEvalid, ETime = Game.Timer(), Game.Timer()
 						DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay*0.8 + Custom.delay))
-						DelayAction(function() OrbState("Global", true) end, Custom.delay)
 						castXstate = 1
 						castXtick = GetTickCount()
-						ComboTick = GetTickCount()
+						DelayAction(function() OrbState("Global", true) end, Custom.delay)
+					end
+				end
+			elseif Custom.spell == 2 and (H:GetSpellData(1).currentCd > H:GetSpellData(1).cd/2) and (Game.Timer() - (ETime + ping + E.delay)) > 5 then
+				if HealthPred(target, Custom.Delay + 0.1) < 1 then return end
+				if not target.toScreen.onScreen then
+					return
+				end
+				local prediction = ESet:GetPrediction(target, H.pos)
+				OrbState("Attack", false)
+				if prediction and prediction.hitChance >= Custom.hitchance and not target.dead and (GetTickCount() - castXtick) > 30 then
+					mLocation = mousePos
+					if mLocation == nil then return end
+					DelayAction(function() OrbState("Movement", false) end, Custom.delay)
+					if target ~= nil then
+						DelayAction(function() Control.SetCursorPos(prediction.castPos) end, Custom.delay)
+						DelayAction(function() Control.KeyDown(Custom.hotkey) end, Custom.delay)
+						DelayAction(function() Control.KeyUp(Custom.hotkey) end, Custom.delay)
+						customEvalid, ETime = Game.Timer(), Game.Timer()
+						DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay*0.8 + Custom.delay))
+						castXstate = 1
+						castXtick = GetTickCount()
+						DelayAction(function() OrbState("Global", true) end, Custom.delay)
 					end
 				end
 			elseif Custom.spell == 3 then
@@ -352,7 +372,7 @@ function CastX(spell, target, hitchance, minion, hero)
 					end
 					castXstate = 1
 					castXtick = GetTickCount()
-					ComboTick = GetTickCount()
+					DelayAction(function() OrbState("Global", true) end, Custom.delay)
 				end
 			end
 		elseif castXstate == 2 then return end
@@ -366,7 +386,7 @@ function EnemyComing(target, time)
 		second = target.pos
 		if DistTo(first, H.pos) > DistTo(second, H.pos) then
 			return true
-		elseif math.sqrt(DistTo(first, H.pos)) == math.sqrt(DistTo(second, H.pos)) then
+		elseif DistTo(first, H.pos) == DistTo(second, H.pos) then
 			return false
 		end
 	end
@@ -566,7 +586,7 @@ function Buffed(target, buffname)
   	end
   	if t ~= nil then
   		for i, buff in pairs(t) do
-			if buff.name == buffname then
+			if buff.name == buffname and buff.expireTime > 0 then
 				return true
 			end
 		end
@@ -681,7 +701,6 @@ function Combo()
 	ForceMove(nil)
 	castXstate = 1
 	OrbState("Global", true)
-	ComboTick = GetTickCount()
 
 	if Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
 		local target = Target(W.range, "damage")
@@ -706,20 +725,12 @@ function Combo()
 				end
 			end
 		end
-	elseif Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 then
-		local target = Target(Q.range, "damage")
-		if Buffed(target, "jhinpassiveattackbuff") or H.hudAmmo == 1 then return end
-		if target == nil then return end
-		if H.attackData.state == 3 then
-			OrbState("Global", true)
-			CastX(4, target, 0.15)
-		end
 	end
 	if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 then
 		local target = Target(Q.range, "damage")
-		if Buffed(target, "jhinpassiveattackbuff") or H.hudAmmo == 1 then return end
+		if Buffed(target, "jhinpassiveattackbuff") then return end
 		if target == nil then return end
-		if H.attackData.state == 3 then
+		if H.attackData.state == (3 or 1 or 0) then
 			OrbState("Global", true)
 			CastX(4, target, 0.15)
 		end
@@ -738,12 +749,12 @@ function Combo()
 			if Buffed(target, "jhinpassiveattackbuff") or H.hudAmmo == 1 then return end
 			if target == nil then return end
 			if HealthPred(target, 0.85) < (target.health*100)/target.maxHealth or CCed(H, 10) then return end
-			if Game.Timer() - (ETime + ping + E.delay) < 10 and GetTickCount() - AAUp < (H.attackData.windDownTime*30)*0.6 then return end
+			if (GetTickCount() - AAUp) < ((H.attackData.windDownTime*30)*0.6) then return end
 			if H.attackData.state ~= 2 then
 				OrbState("Global", true)
 				CastX(2, target, 0.15)
 			end
-		end	
+		end
 	end
 end
 
