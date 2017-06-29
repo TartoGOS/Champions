@@ -45,6 +45,8 @@ Menu:MenuElement({id = "Harass", name = "Harass", type = MENU})
 Menu:MenuElement({id = "Laneclear", name = "Laneclear", type = MENU})
 Menu:MenuElement({id = "Lasthit", name = "Lasthit", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
+Menu:MenuElement({id = "KsW", name = "Use W to Killsteal", value = false, leftIcon = WIcon})
+Menu:MenuElement({id = "AutoW", name = "Use W Auto on CC", value = false, leftIcon = WIcon})
 Menu:MenuElement({name = "Version : 1.0", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE})
 --Combo
@@ -72,8 +74,6 @@ Menu.Lasthit:MenuElement({id = "UseQMana", name = "Q Mana min", value = 40, min 
 Menu.Lasthit:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = WIcon})
 Menu.Lasthit:MenuElement({id = "UseWMana", name = "W Mana min", value = 40, min = 0, max = 100, step = 5, leftIcon = WIcon})
 --Killsteal/AutoCC
-Menu:MenuElement({id = "KsW", name = "Use W to Killsteal", value = false, leftIcon = WIcon})
-Menu:MenuElement({id = "AutoW", name = "Use W Auto on CC", value = false, leftIcon = WIcon})
 --Drawings
 Menu.Drawings:MenuElement({id = "DrawAuto", name = "Draw AA Range", value = true, leftIcon = HeroIcon})
 Menu.Drawings:MenuElement({id = "DrawQ", name = "Draw Q Range", value = true, leftIcon = QIcon})
@@ -284,6 +284,7 @@ function CastX(spell, target, hitchance, minion, hero)
 					castXstate = 1
 					castXtick = GetTickCount()
 					ComboTick = GetTickCount()
+					DelayAction(function() OrbState("Global", true) end, Custom.delay)
 				end
 			elseif Custom.spell == 1 then
 				if HealthPred(target, Custom.Delay + 0.1) < 1 then return end
@@ -324,7 +325,7 @@ function CastX(spell, target, hitchance, minion, hero)
 						DelayAction(function() Control.SetCursorPos(prediction.castPos) end, Custom.delay)
 						DelayAction(function() Control.KeyDown(Custom.hotkey) end, Custom.delay)
 						customEvalid = Game.Timer()
-						ETime = (Game.Timer() + E.delay +  Custom.delay)
+						ETime = Game.Timer()
 						DelayAction(function() Control.KeyUp(Custom.hotkey) end, Custom.delay)
 						DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay*0.8 + Custom.delay))
 						DelayAction(function() OrbState("Global", true) end, Custom.delay)
@@ -385,7 +386,7 @@ function AbleCC(who)
 	if who.buffCount == 0 then return end
 	for i = 0, who.buffCount do
 		local buffs = who:GetBuff(i)
-		if buffs.type == (5 or 8 or 11 or 22 or 24 or 29 or 30) and buffs.expireTime > 0.9 then
+		if buffs.type == (5 or 8 or 11 or 22 or 24 or 29 or 30) and buffs.expireTime > (W.delay + ping)*0.95 then
 			return true
 		end
 	end
@@ -402,6 +403,20 @@ function CCed(who, type1)
 		end
 	end
 	return false
+end
+
+function TargetDistance(range)
+	local target = nil
+	for i = 0, Game.HeroCount() do
+		local Hero = Game.Hero(i)
+		if DistTo(Hero.pos, H.pos) <= range and Hero.isEnemy then
+			if target == nil then target = Hero break end
+			if DistTo(Hero.pos, H.pos) < DistTo(target.pos, H.pos) then
+				target = Hero
+			end
+		end
+	end
+	return target
 end
 
 function EnemiesCloseCanAttack(range)
@@ -618,6 +633,7 @@ function ForceSteal()
 		castXstate = 1
 		OrbState("Global", true)
 		local target = Target(W.range, "easy")
+		if target == nil then return end
 		if DistTo(target.pos, H.pos) > 680 and EnemiesAround(500) == 0 then
 			if (target.health + target.shieldAD + target.shieldAP) < getdmg("W", target, myHero) then
 				if H.attackData.state ~= 2 then
@@ -640,6 +656,7 @@ function ForceW()
 		end
 		castXstate = 1
 		local target = Target(W.range, "damage")
+		if target == nil then return end
 		if Buffed(target, "jhinespotteddebuff") and DistTo(target.pos, H.pos) > 700 then
 			if EnemiesAround(300) >= 1 or EnemiesCloseCanAttack(680) >= 2 then return end
 			if H.attackData.state ~= 2 then
@@ -669,13 +686,13 @@ function Combo()
 	if Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
 		local target = Target(W.range, "damage")
 		if target == nil then return end
-		if Buffed(target, "jhinespotteddebuff") and DistTo(target.pos, H.pos) > 700 then
+		if Buffed(target, "jhinespotteddebuff") and DistTo(target.pos, H.pos) > 750 then
 			if EnemiesAround(300) >= 1 or EnemiesCloseCanAttack(680) >= 2 then return end
 			if H.attackData.state ~= 2 then
 				OrbState("Global", true)
 				CastX(1, target, 0.15)
 			end
-		elseif Buffed(target, "jhinespotteddebuff") and DistTo(target.pos, H.pos) < 400 and DistTo(target.pos, H.pos) > 150 and H.attackData.state == 3 and Game.CanUseSpell(0) ~= 0 then
+		elseif Buffed(target, "jhinespotteddebuff") and DistTo(target.pos, H.pos) < 350 and DistTo(target.pos, H.pos) > 150 and H.attackData.state == 3 and Game.CanUseSpell(0) ~= 0 then
 			if EnemiesCloseCanAttack(680) >= 2 then return end
 			if H.attackData.state ~= 2 then
 				OrbState("Global", true)
@@ -715,17 +732,16 @@ function Combo()
 	end
 
 	if Game.CanUseSpell(0) ~= 0 and Game.CanUseSpell(1) ~= 0 then
-		if Menu.Combo.UseE:Value() and Menu.Combo.UseEMana:Value() < (100*H.mana/H.maxMana) and Game.CanUseSpell(2) == 0 and H:GetSpellData(_E).ammo ~= 0 then
+		if Menu.Combo.UseE:Value() and Menu.Combo.UseEMana:Value() < (100*H.mana/H.maxMana) and Game.CanUseSpell(2) == 0 then
 			if myHero.activeSpell.valid then return end
 			local target = Target(750, "damage")
 			if Buffed(target, "jhinpassiveattackbuff") or H.hudAmmo == 1 then return end
 			if target == nil then return end
 			if HealthPred(target, 0.85) < (target.health*100)/target.maxHealth or CCed(H, 10) then return end
-			if Game.Timer() - ETime < 10 and GetTickCount() - AAUp < (H.attackData.windDownTime*30)*0.6 then return end
+			if Game.Timer() - (ETime + ping + E.delay) < 10 and GetTickCount() - AAUp < (H.attackData.windDownTime*30)*0.6 then return end
 			if H.attackData.state ~= 2 then
 				OrbState("Global", true)
 				CastX(2, target, 0.15)
-				ETime = (Game.Timer() + E.delay)
 			end
 		end	
 	end
@@ -769,6 +785,18 @@ function Lasthit()
 	ForceMove(nil)
 	castXstate = 1
 	OrbState("Global", true)
+
+	if Menu.Lasthit.UseQ:Value() and Game.CanUseSpell(0) == 0 then
+		if Menu.Lasthit.UseQMana:Value() < (100*H.mana/H.maxMana) and H.attackData.state == 3 then
+			for i = 0, Game.MinionCount() do
+				local minion = Game.Minion(i)
+				if DistTo(minion.pos, H.pos) < 680 and getdmg("Q", minion, H) > minion.health then
+					OrbState("Global", true)
+					CastX(4, target, 0.15)
+				end
+			end
+		end
+	end
 end
 
 function Flee()
