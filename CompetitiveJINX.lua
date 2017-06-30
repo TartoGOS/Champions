@@ -163,7 +163,7 @@ end
 
 function EnemyOk(target)
 	if target == nil then return end
-	if target.isEnemy and not target.isImmortal and target.isTargetable and not target.dead then
+	if target.isEnemy and not target.isImmortal and not target.dead then
 		return true
 	else return false
 	end
@@ -436,7 +436,7 @@ function AbleCC(who)
 	if who.buffCount == 0 then return end
 	for i = 0, who.buffCount do
 		local buffs = who:GetBuff(i)
-		if buffs.type == (5 or 8 or 11 or 22 or 24 or 29 or 30) and buffs.expireTime > 0.9 then
+		if buffs.type == (5 or 8 or 11 or 22 or 24 or 29 or 30) and buffs.expireTime > 1.2 then
 			return true
 		end
 	end
@@ -589,14 +589,15 @@ end
 --SRU_ChaosMinionSiege
 --SRU_ChaosMinionSuper
 
-function MinionNumber(range, Type)
+function MinionNumber(range, Type, who)
 	if range == nil then return end
+	if who == nil then who = H end
 	local count = 0
 	if Type == nil then
 		local minion = 0
 		for i = 0, Game.MinionCount() do
 			local minion = Game.Minion(i)
-			if math.sqrt(DistTo(minion.pos, H.pos)) < range then
+			if math.sqrt(DistTo(minion.pos, who.pos)) < range then
 				count = count + 1
 			end
 		end
@@ -604,12 +605,12 @@ function MinionNumber(range, Type)
 		local minion = 0
 		for i = 0, Game.MinionCount() do
 			local minion = Game.Minion(i)
-			if H.team == 100 then
-				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_ChaosMinionRanged" then
+			if who.team == 100 then
+				if math.sqrt(DistTo(minion.pos, who.pos)) < range and minion.charName == "SRU_ChaosMinionRanged" then
 					count = count + 1
 				end
-			elseif H.team == 200 then
-				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_OrderMinionRanged" then
+			elseif who.team == 200 then
+				if math.sqrt(DistTo(minion.pos, who.pos)) < range and minion.charName == "SRU_OrderMinionRanged" then
 					count = count + 1
 				end
 			end
@@ -618,12 +619,12 @@ function MinionNumber(range, Type)
 		local minion = 0
 		for i = 0, Game.MinionCount() do
 			local minion = Game.Minion(i)
-			if H.team == 100 then
-				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_ChaosMinionMelee" then
+			if who.team == 100 then
+				if math.sqrt(DistTo(minion.pos, who.pos)) < range and minion.charName == "SRU_ChaosMinionMelee" then
 					count = count + 1
 				end
-			elseif H.team == 200 then
-				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_OrderMinionRMelee" then
+			elseif who.team == 200 then
+				if math.sqrt(DistTo(minion.pos, who.pos)) < range and minion.charName == "SRU_OrderMinionRMelee" then
 					count = count + 1
 				end
 			end
@@ -632,12 +633,12 @@ function MinionNumber(range, Type)
 		local minion = 0
 		for i = 0, Game.MinionCount() do
 			local minion = Game.Minion(i)
-			if H.team == 100 then
-				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_ChaosMinionSiege" then
+			if who.team == 100 then
+				if math.sqrt(DistTo(minion.pos, who.pos)) < range and minion.charName == "SRU_ChaosMinionSiege" then
 					count = count + 1
 				end
-			elseif H.team == 200 then
-				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_OrderMinionSiege" then
+			elseif who.team == 200 then
+				if math.sqrt(DistTo(minion.pos, who.pos)) < range and minion.charName == "SRU_OrderMinionSiege" then
 					count = count + 1
 				end
 			end
@@ -646,12 +647,12 @@ function MinionNumber(range, Type)
 		local minion = 0
 		for i = 0, Game.MinionCount() do
 			local minion = Game.Minion(i)
-			if H.team == 100 then
-				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_ChaosMinionSuper" then
+			if who.team == 100 then
+				if math.sqrt(DistTo(minion.pos, who.pos)) < range and minion.charName == "SRU_ChaosMinionSuper" then
 					count = count + 1
 				end
-			elseif H.team == 200 then
-				if math.sqrt(DistTo(minion.pos, H.pos)) < range and minion.charName == "SRU_OrderMinionSuper" then
+			elseif who.team == 200 then
+				if math.sqrt(DistTo(minion.pos, who.pos)) < range and minion.charName == "SRU_OrderMinionSuper" then
 					count = count + 1
 				end
 			end
@@ -679,22 +680,19 @@ function Combo()
 		if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0  then 
 			if H.attackData.state == 1 then
 				OrbState("Global", true)
-				CastOnly(HK_Q)
+				Control.CastSpell(HK_Q)
 			end
 		end
 	end
 
 	if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 then
-		local target = Target(QRange()+200, "damage")
-		if NeedLifesteal(H, QRange()) then return end
+		local target = Target(W.range, "damage")
 		if target ~= nil then
 			if not EnemyOk(target) then return end
-			if H:GetSpellData(0).toggleState == 1 and math.sqrt(DistTo(target.pos, H.pos)) > 655 and math.sqrt(DistTo(target.pos, H.pos)) <= QRange()+200 then
-				if H.mana < 20 then return end
+			if H:GetSpellData(0).toggleState == 1 and math.sqrt(DistTo(target.pos, H.pos)) > 655 and math.sqrt(DistTo(target.pos, H.pos)) <= (QRange()+150) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastOnly(HK_Q)
-					DelayAction(function() Force(target) end, Q.delay)
 				end
 			elseif H:GetSpellData(0).toggleState == 2 and math.sqrt(DistTo(target.pos, H.pos)) <= 655 then
 				if H.attackData.state ~= 2 then
@@ -771,7 +769,7 @@ function Harass()
 			if H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 then 
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
-					CastOnly(HK_Q)
+					Control.CastSpell(HK_Q)
 				end
 			end
 		elseif target ~= nil then
@@ -782,7 +780,7 @@ function Harass()
 					if H:GetSpellData(0).toggleState == 2 and Game.CanUseSpell(0) == 0 then
 						if H.attackData.state ~= 2 then
 							OrbState("Global", true)
-							CastOnly(HK_Q)
+							Control.CastSpell(HK_Q)
 							DelayAction(function() Force(minion) end, ping/1000 + H.attackData.windDownTime)
 							return
 						end
@@ -794,7 +792,7 @@ function Harass()
 				elseif math.sqrt(DistTo(target.pos, H.pos)) < QRange() then
 					if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0 and math.sqrt(DistTo(target.pos, H.pos)) >= 655 then
 						if H.attackData.state ~= 2 then
-							CastOnly(HK_Q)
+							Control.CastSpell(HK_Q)
 							DelayAction(function() Force(target) end, ping/1000 + H.attackData.windDownTime)
 							return
 						end
@@ -823,6 +821,7 @@ end
 function Laneclear()
 	if Game.Timer() < 91 then return end
 	if H.activeSpell.valid then return end
+	if EnemiesAround(800) > 0 then return end
 	castXstate = 1
 	OrbState("Global", true)
 	Force(nil)
