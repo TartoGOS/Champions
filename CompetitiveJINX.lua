@@ -113,18 +113,18 @@ Menu.Drawings:MenuElement({id = "WriteTR", name = "Write Toggle Q", value = true
 
 function Tick()
 	if H.dead then return end
-	if _G.SDK then
-		if _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_COMBO] then
+	if SDK then
+		if SDK.Orbwalker.Modes[SDK.ORBWALKER_MODE_COMBO] then
 			Combo()
-		elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_HARASS] then
+		elseif SDK.Orbwalker.Modes[SDK.ORBWALKER_MODE_HARASS] then
 			Harass()
-		elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_LANECLEAR] then
+		elseif SDK.Orbwalker.Modes[SDK.ORBWALKER_MODE_LANECLEAR] then
 			Laneclear()
-		elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_JUNGLECLEAR] then
+		elseif SDK.Orbwalker.Modes[SDK.ORBWALKER_MODE_JUNGLECLEAR] then
 			Jungleclear()
-		elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_LASTHIT] then
+		elseif SDK.Orbwalker.Modes[SDK.ORBWALKER_MODE_LASTHIT] then
 			Lasthit()
-		elseif _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_Flee] then
+		elseif SDK.Orbwalker.Modes[SDK.ORBWALKER_MODE_Flee] then
 			Flee()
 		end
 	elseif EOWLoaded then
@@ -184,23 +184,23 @@ function TargetDistance(range)
 end
 
 function Target(range, type1)
-	if _G.SDK then
+	if SDK then
 		if type1 == "damage" then
 			if H.totalDamage > H.ap then
-				local target = _G.SDK.TargetSelector:GetTarget(range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+				local target = SDK.TargetSelector:GetTarget(range, SDK.DAMAGE_TYPE_PHYSICAL)
 				return target
 			elseif H.totalDamage <= H.ap then
-				local target = _G.SDK.TargetSelector:GetTarget(range, _G.SDK.DAMAGE_TYPE_MAGICAL)
+				local target = SDK.TargetSelector:GetTarget(range, SDK.DAMAGE_TYPE_MAGICAL)
 				return target
 			end
 		elseif type1 == "easy" then
-			local target = _G.SDK.TargetSelector:GetTarget(range, _G.SDK.DAMAGE_TYPE_PHYSICAL)
+			local target = SDK.TargetSelector:GetTarget(range, SDK.DAMAGE_TYPE_PHYSICAL)
 			return target
 		elseif type1 == "distance" then
 			local target = TargetDistance(range)
 			return target
 		end
-	elseif _G.EOWLoaded then
+	elseif EOWLoaded then
 		if type1 == "damage" then
 			if H.totalDamage > H.ap then
 				local target = EOW:GetTarget(range, ad_dec, H.pos)
@@ -237,10 +237,10 @@ end
 
 function OrbState(state, bool)
 	if state == "Global" then
-		if _G.SDK then 
-			_G.SDK.Orbwalker:SetMovement(bool)
-			_G.SDK.Orbwalker:SetAttack(bool)
-		elseif _G.EOWLoaded then
+		if SDK then 
+			SDK.Orbwalker:SetMovement(bool)
+			SDK.Orbwalker:SetAttack(bool)
+		elseif EOWLoaded then
 			EOW:SetAttacks(bool)
 			EOW:SetMovements(bool)
 		else
@@ -248,17 +248,17 @@ function OrbState(state, bool)
 			GOS:BlockMovement(not bool)
 		end
 	elseif state == "Attack" then
-		if _G.SDK then 
-			_G.SDK.Orbwalker:SetAttack(bool)
-		elseif _G.EOWLoaded then
+		if SDK then 
+			SDK.Orbwalker:SetAttack(bool)
+		elseif EOWLoaded then
 			EOW:SetAttacks(bool)
 		else
 			GOS:BlockAttack(not bool)
 		end
 	elseif state == "Movement" then
-		if _G.SDK then 
-			_G.SDK.Orbwalker:SetMovement(bool)
-		elseif _G.EOWLoaded then
+		if SDK then 
+			SDK.Orbwalker:SetMovement(bool)
+		elseif EOWLoaded then
 			EOW:SetMovements(bool)
 		else
 			GOS:BlockMovement(not bool)
@@ -354,7 +354,7 @@ end
 function CastOnly(spell)
 	if H.activeSpell.valid then return end
 	local CustomDelay = ping/1000
-	if _G.SDK then
+	if SDK then
 		if ((Game.Timer() - H.attackData.endTime) < (0.45*H.attackData.windDownTime) and (GetTickCount() - castXtick) > 25) then
 			if H:GetSpellData(0).toggleState == 1 then
 				DelayAction(function() OrbState("Attack", false) end, CustomDelay*2)
@@ -368,7 +368,7 @@ function CastOnly(spell)
 				castOnlytick = GetTickCount()
 			end
 		end
-	elseif _G.EOWLoaded then
+	elseif EOWLoaded then
 		if ((Game.Timer() - H.attackData.endTime) < (0.45*H.attackData.windDownTime) and (GetTickCount() - castXtick) > 25) then
 			DelayAction(function() Control.KeyDown(spell) end, CustomDelay)
 			DelayAction(function() Control.KeyUp(spell) end, CustomDelay)
@@ -469,9 +469,9 @@ function EnemiesAround(CustomRange)
 end
 
 function HealthPred(target, time)
-	if _G.SDK then
-		return _G.SDK.HealthPrediction:GetPrediction(target, time)
-	elseif _G.EOWLoaded then
+	if SDK then
+		return SDK.HealthPrediction:GetPrediction(target, time)
+	elseif EOWLoaded then
 		return EOW:GetHealthPrediction(target, time)
 	else
 		return GOS:HP_Pred(target,time)
@@ -540,19 +540,19 @@ end
 
 function Force(target)
 	if target ~= nil then
-		if _G.SDK then
-			_G.SDK.Orbwalker.ForceTarget = target
-		elseif _G.EOWLoaded then
+		if SDK then
+			SDK.Orbwalker.ForceTarget = target
+		elseif EOWLoaded then
 			EOW:ForceTarget(target)
-		elseif _G.GOS then
+		elseif GOS then
 			GOS:ForceTarget(target)
 		end
 	else
-		if _G.SDK then
-			_G.SDK.Orbwalker.ForceTarget = nil
-		elseif _G.EOWLoaded then
+		if SDK then
+			SDK.Orbwalker.ForceTarget = nil
+		elseif EOWLoaded then
 			EOW:ForceTarget(nil)
-		elseif _G.GOS then
+		elseif GOS then
 			GOS:ForceTarget(nil)
 		end
 	end
