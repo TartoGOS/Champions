@@ -92,15 +92,15 @@ end
 
 function AATick()
 	if H.attackData.state == 2 then
-		AAUp = GetTickCount()
+		AAUp = Game.Timer()
 	elseif H.attackData.state == 3 then
-		AADown = GetTickCount()
+		AADown = Game.Timer()
 	end
 end
 
 function HasMoved(target, time)
-	local first, second, delay = target.pos, nil, GetTickCount()
-	if GetTickCount() - delay > time then
+	local first, second, delay = target.pos, nil, Game.Timer()
+	if Game.Timer() - delay > time then
 		second = target.pos
 		if first ~= second then
 			return true
@@ -181,7 +181,7 @@ function Target(range, type1)
 			local target = TargetDistance(range)
 			return target
 		end
-	elseif _G.EOWLoaded then
+	elseif EOWLoaded then
 		if type1 == "damage" then
 			if H.totalDamage > H.ap then
 				local target = EOW:GetTarget(range, ad_dec, H.pos)
@@ -221,7 +221,7 @@ function OrbState(state, bool)
 		if _G.SDK then 
 			_G.SDK.Orbwalker:SetMovement(bool)
 			_G.SDK.Orbwalker:SetAttack(bool)
-		elseif _G.EOWLoaded then
+		elseif EOWLoaded then
 			EOW:SetAttacks(bool)
 			EOW:SetMovements(bool)
 		else
@@ -231,7 +231,7 @@ function OrbState(state, bool)
 	elseif state == "Attack" then
 		if _G.SDK then 
 			_G.SDK.Orbwalker:SetAttack(bool)
-		elseif _G.EOWLoaded then
+		elseif EOWLoaded then
 			EOW:SetAttacks(bool)
 		else
 			GOS:BlockAttack(not bool)
@@ -239,7 +239,7 @@ function OrbState(state, bool)
 	elseif state == "Movement" then
 		if _G.SDK then 
 			_G.SDK.Orbwalker:SetMovement(bool)
-		elseif _G.EOWLoaded then
+		elseif EOWLoaded then
 			EOW:SetMovements(bool)
 		else
 			GOS:BlockMovement(not bool)
@@ -282,10 +282,10 @@ function CastX(spell, target, hitchance, minion, hero)
 				if not target.toScreen.onScreen then
 					return
 				end
-				if not target.dead and (GetTickCount() - castXtick) > 25 then
+				if not target.dead and (Game.Timer() - castXtick) > 0.8 then
 					DelayAction(function() Control.CastSpell(HK_Q, target) end, Custom.delay)
 					castXstate = 1
-					castXtick = GetTickCount()
+					castXtick = Game.Timer()
 				end
 			elseif Custom.spell == 1 then
 				if HealthPred(target, Custom.Delay + 0.1) < 1 then return end
@@ -294,7 +294,7 @@ function CastX(spell, target, hitchance, minion, hero)
 				end
 				local prediction = WSet:GetPrediction(target, H.pos)
 				OrbState("Attack", false)
-				if prediction and prediction.hitChance >= Custom.hitchance and prediction:hCollision() == Custom.hero and not target.dead and (GetTickCount() - castXtick) > 30 then
+				if prediction and prediction.hitChance >= Custom.hitchance and prediction:hCollision() == Custom.hero and not target.dead and (Game.Timer() - castXtick) > 1 then
 					if H.attackData.state == 2 then return end
 					mLocation = mousePos
 					if mLocation == nil then return end
@@ -306,7 +306,7 @@ function CastX(spell, target, hitchance, minion, hero)
 						customWvalid = Game.Timer()
 						DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay/2 + Custom.delay))
 						castXstate = 1
-						castXtick = GetTickCount()
+						castXtick = Game.Timer()
 						DelayAction(function() OrbState("Global", true) end, Custom.delay)
 					end
 				end
@@ -317,7 +317,7 @@ function CastX(spell, target, hitchance, minion, hero)
 				end
 				local prediction = ESet:GetPrediction(target, H.pos)
 				OrbState("Attack", false)
-				if prediction and prediction.hitChance >= Custom.hitchance and not target.dead and (GetTickCount() - castXtick) > 30 then
+				if prediction and prediction.hitChance >= Custom.hitchance and not target.dead and (Game.Timer() - castXtick) > 1 then
 					mLocation = mousePos
 					if mLocation == nil then return end
 					DelayAction(function() OrbState("Movement", false) end, Custom.delay)
@@ -328,7 +328,7 @@ function CastX(spell, target, hitchance, minion, hero)
 						customEvalid, ETime = Game.Timer(), Game.Timer()
 						DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay*0.8 + Custom.delay))
 						castXstate = 1
-						castXtick = GetTickCount()
+						castXtick = Game.Timer()
 						DelayAction(function() OrbState("Global", true) end, Custom.delay)
 					end
 				end
@@ -339,7 +339,7 @@ function CastX(spell, target, hitchance, minion, hero)
 				end
 				local prediction = ESet:GetPrediction(target, H.pos)
 				OrbState("Attack", false)
-				if prediction and prediction.hitChance >= Custom.hitchance and not target.dead and (GetTickCount() - castXtick) > 30 then
+				if prediction and prediction.hitChance >= Custom.hitchance and not target.dead and (Game.Timer() - castXtick) > 1 then
 					mLocation = mousePos
 					if mLocation == nil then return end
 					DelayAction(function() OrbState("Movement", false) end, Custom.delay)
@@ -350,7 +350,7 @@ function CastX(spell, target, hitchance, minion, hero)
 						customEvalid, ETime = Game.Timer(), Game.Timer()
 						DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay*0.8 + Custom.delay))
 						castXstate = 1
-						castXtick = GetTickCount()
+						castXtick = Game.Timer()
 						DelayAction(function() OrbState("Global", true) end, Custom.delay)
 					end
 				end
@@ -361,7 +361,7 @@ function CastX(spell, target, hitchance, minion, hero)
 				end
 				local prediction = RSet:GetPrediction(target, H.pos)
 				OrbState("Attack", false)
-				if prediction and prediction.hitChance >= Custom.hitchance and prediction:hCollision() == Custom.hero and not target.dead and (GetTickCount() - castXtick) > 25 then
+				if prediction and prediction.hitChance >= Custom.hitchance and prediction:hCollision() == Custom.hero and not target.dead and (Game.Timer() - castXtick) > 0.8 then
 					if myHero:GetSpellData(_R).name == "JhinR" then
 						DelayAction(function() OrbState("Movement", false) end, Custom.delay)
 						DelayAction(function() Control.SetCursorPos(prediction.castPos) end, Custom.delay)
@@ -371,7 +371,7 @@ function CastX(spell, target, hitchance, minion, hero)
 						Control.CastSpell(HK_Q, prediction.castPos)
 					end
 					castXstate = 1
-					castXtick = GetTickCount()
+					castXtick = Game.Timer()
 					DelayAction(function() OrbState("Global", true) end, Custom.delay)
 				end
 			end
@@ -381,8 +381,8 @@ end
 
 function EnemyComing(target, time)
 	if target == nil then return end
-	local first, second, delay = target.pos, nil, GetTickCount()
-	if GetTickCount() - delay > time then
+	local first, second, delay = target.pos, nil, Game.Timer()
+	if Game.Timer() - delay > time then
 		second = target.pos
 		if DistTo(first, H.pos) > DistTo(second, H.pos) then
 			return true
@@ -455,7 +455,7 @@ end
 function HealthPred(target, time)
 	if _G.SDK then
 		return _G.SDK.HealthPrediction:GetPrediction(target, time)
-	elseif _G.EOWLoaded then
+	elseif EOWLoaded then
 		return EOW:GetHealthPrediction(target, time)
 	else
 		return GOS:HP_Pred(target,time)
@@ -466,17 +466,17 @@ function Force(target)
 	if target ~= nil then
 		if _G.SDK then
 			_G.SDK.Orbwalker.ForceTarget = target
-		elseif _G.EOWLoaded then
+		elseif EOWLoaded then
 			EOW:ForceTarget(target)
-		elseif _G.GOS then
+		elseif GOS then
 			GOS:ForceTarget(target)
 		end
 	else
 		if _G.SDK then
 			_G.SDK.Orbwalker.ForceTarget = nil
-		elseif _G.EOWLoaded then
+		elseif EOWLoaded then
 			EOW:ForceTarget(nil)
-		elseif _G.GOS then
+		elseif GOS then
 			GOS:ForceTarget(nil)
 		end
 	end
@@ -597,7 +597,7 @@ function QReset(target)
 	if target == nil then return end
 	if _G.SDK and _G.SDK.Orbwalker then
 		_G.SDK.Orbwalker:OnPostAttack(CastX(0, target, 0.15))
-	elseif _G.EOWLoaded then
+	elseif EOWLoaded then
 		EOW:AddCallback(EOW.AfterAttack, CastX(0, target, 0.15))
 	else 
 		GOS:OnAttackComplete(CastX(0, target, 0.15))
@@ -625,17 +625,17 @@ function ForceMove(position)
 	if position ~= nil then
 		if _G.SDK then
 			_G.SDK.Orbwalker.ForceMovement = position
-		elseif _G.EOWLoaded then
+		elseif EOWLoaded then
 			EOW:ForceMovePos(position)
-		elseif _G.GOS then
+		elseif GOS then
 			GOS:ForceMove(position)
 		end
 	else
 		if _G.SDK then
 			_G.SDK.Orbwalker.ForceMovement = nil
-		elseif _G.EOWLoaded then
+		elseif EOWLoaded then
 			EOW:ForceMovePos(nil)
-		elseif _G.GOS then
+		elseif GOS then
 			GOS:ForceMove(nil)
 		end
 	end
@@ -730,7 +730,7 @@ function Combo()
 		local target = Target(Q.range, "damage")
 		if Buffed(target, "jhinpassiveattackbuff") then return end
 		if target == nil then return end
-		if H.attackData.state == (3 or 1 or 0) then
+		if H.attackData.state ~= 2 then
 			OrbState("Global", true)
 			CastX(4, target, 0.15)
 		end
@@ -749,7 +749,7 @@ function Combo()
 			if Buffed(target, "jhinpassiveattackbuff") or H.hudAmmo == 1 then return end
 			if target == nil then return end
 			if HealthPred(target, 0.85) < (target.health*100)/target.maxHealth or CCed(H, 10) then return end
-			if (GetTickCount() - AAUp) < ((H.attackData.windDownTime*30)*0.6) then return end
+			if (Game.Timer() - AAUp) < ((H.attackData.windDownTime)*0.6) then return end
 			if H.attackData.state ~= 2 then
 				OrbState("Global", true)
 				CastX(2, target, 0.15)
@@ -797,7 +797,7 @@ function Lasthit()
 	castXstate = 1
 	OrbState("Global", true)
 
-	if Menu.Lasthit.UseQ:Value() and Game.CanUseSpell(0) == 0 then
+	--[[if Menu.Lasthit.UseQ:Value() and Game.CanUseSpell(0) == 0 then
 		if Menu.Lasthit.UseQMana:Value() < (100*H.mana/H.maxMana) and H.attackData.state == 3 then
 			for i = 0, Game.MinionCount() do
 				local minion = Game.Minion(i)
@@ -807,7 +807,7 @@ function Lasthit()
 				end
 			end
 		end
-	end
+	end]]
 end
 
 function Flee()
