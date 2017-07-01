@@ -47,6 +47,7 @@ Menu:MenuElement({id = "Lasthit", name = "Lasthit", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
 Menu:MenuElement({id = "KsW", name = "Use W to Killsteal", value = false, leftIcon = WIcon})
 Menu:MenuElement({id = "AutoW", name = "Use W Auto on CC", value = false, leftIcon = WIcon})
+Menu:MenuElement({id = "Accuracy", name = "Skillshot Hitchance", value = 0.15, min = 0.01, max = 1, step = 0.01})
 Menu:MenuElement({name = "Version : 1.05", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE})
 --Combo
@@ -596,25 +597,25 @@ end
 function QReset(target)
 	if target == nil then return end
 	if _G.SDK and _G.SDK.Orbwalker then
-		_G.SDK.Orbwalker:OnPostAttack(CastX(0, target, 0.15))
+		_G.SDK.Orbwalker:OnPostAttack(CastX(0, target, Menu.Accuracy:Value()))
 	elseif EOWLoaded then
-		EOW:AddCallback(EOW.AfterAttack, CastX(0, target, 0.15))
+		EOW:AddCallback(EOW.AfterAttack, CastX(0, target, Menu.Accuracy:Value()))
 	else 
-		GOS:OnAttackComplete(CastX(0, target, 0.15))
+		GOS:OnAttackComplete(CastX(0, target, Menu.Accuracy:Value()))
 	end
 end
 
 function ForceR()
 	if H:GetSpellData(_R).name == "JhinR" and Game.CanUseSpell(3) and Menu.Combo.UseR:Value() then
 		local target = Target(2500, "easy")
-		CastX(3, target, 0.15)
+		CastX(3, target, Menu.Accuracy:Value())
 	end
 	if H:GetSpellData(_R).name == "JhinRShot" then
 		if Menu.Combo.UseR:Value() then
 			local target = Target(3500, "easy")
 			if target == nil then return end
 			local prediction = RSet:GetPrediction(target, myHero.pos)
-			if prediction and prediction.hitChance >= 0.15 and prediction:hCollision() == 0 then
+			if prediction and prediction.hitChance >= Menu.Accuracy:Value() and prediction:hCollision() == 0 then
 				Control.CastSpell(HK_R, prediction.castPos)
 			end
 		end
@@ -658,7 +659,7 @@ function ForceSteal()
 			if (target.health + target.shieldAD + target.shieldAP) < getdmg("W", target, myHero) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
-					CastX(1, target, 0.15)
+					CastX(1, target, Menu.Accuracy:Value())
 				end
 			end
 		end
@@ -681,7 +682,7 @@ function ForceW()
 			if EnemiesAround(300) >= 1 or EnemiesCloseCanAttack(680) >= 2 then return end
 			if H.attackData.state ~= 2 then
 				OrbState("Global", true)
-				CastX(1, target, 0.15)
+				CastX(1, target, Menu.Accuracy:Value())
 			end
 		end
 	end
@@ -709,19 +710,19 @@ function Combo()
 			if EnemiesAround(300) >= 1 or EnemiesCloseCanAttack(680) >= 2 then return end
 			if H.attackData.state ~= 2 then
 				OrbState("Global", true)
-				CastX(1, target, 0.15)
+				CastX(1, target, Menu.Accuracy:Value())
 			end
 		elseif Buffed(target, "jhinespotteddebuff") and DistTo(target.pos, H.pos) < 350 and DistTo(target.pos, H.pos) > 150 and H.attackData.state == 3 and Game.CanUseSpell(0) ~= 0 then
 			if EnemiesCloseCanAttack(680) >= 2 then return end
 			if H.attackData.state ~= 2 then
 				OrbState("Global", true)
-				CastX(1, target, 0.15)
+				CastX(1, target, Menu.Accuracy:Value())
 			end
 		elseif DistTo(target.pos, H.pos) > 680 and EnemiesAround(500) == 0 and Menu.Combo.UseWKs:Value() then
 			if (target.health + target.shieldAD + target.shieldAP) < getdmg("W", target, myHero) then
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
-					CastX(1, target, 0.15)
+					CastX(1, target, Menu.Accuracy:Value())
 				end
 			end
 		end
@@ -732,14 +733,14 @@ function Combo()
 		if target == nil then return end
 		if H.attackData.state ~= 2 then
 			OrbState("Global", true)
-			CastX(4, target, 0.15)
+			CastX(4, target, Menu.Accuracy:Value())
 		end
 	end
 	if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 and Buffed(H, "JhinPassiveReload") then
 		local target = Target(Q.range, "damage")
 		if target == nil then return end
 		OrbState("Global", true)
-		CastX(4, target, 0.15)
+		CastX(4, target, Menu.Accuracy:Value())
 	end
 
 	if Game.CanUseSpell(0) ~= 0 and Game.CanUseSpell(1) ~= 0 then
@@ -752,7 +753,7 @@ function Combo()
 			if (Game.Timer() - AAUp) < ((H.attackData.windDownTime)*0.6) then return end
 			if H.attackData.state ~= 2 then
 				OrbState("Global", true)
-				CastX(2, target, 0.15)
+				CastX(2, target, Menu.Accuracy:Value())
 			end
 		end
 	end
@@ -803,7 +804,7 @@ function Lasthit()
 				local minion = Game.Minion(i)
 				if DistTo(minion.pos, H.pos) < 680 and getdmg("Q", minion, H) > minion.health then
 					OrbState("Global", true)
-					CastX(4, target, 0.15)
+					CastX(4, target, Menu.Accuracy:Value())
 				end
 			end
 		end
