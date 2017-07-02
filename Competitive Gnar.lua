@@ -46,20 +46,20 @@ Menu:MenuElement({name = "By Tarto", type = SPACE})
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
 Menu.Combo:MenuElement({id = "UseQM", name = "Use Q MEGA", value = true, leftIcon = QMIcon})
 Menu.Combo:MenuElement({id = "UseW", name = "Use W MEGA", value = true, leftIcon = WIcon})
-Menu.Combo:MenuElement({id = "UseR", name = "Use R", value = true, leftIcon = RIcon})
+--Menu.Combo:MenuElement({id = "UseR", name = "Use R", value = true, leftIcon = RIcon})
 
 --Harass
 Menu.Harass:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
-Menu.Harass:MenuElement({id = "UseQM", name = "Use Q MEGA", value = true, leftIcon = QMIcon})
+Menu.Harass:MenuElement({id = "UseQM", name = "Use Q MEGA", value = false, leftIcon = QMIcon})
 Menu.Harass:MenuElement({id = "UseW", name = "Use W MEGA", value = true, leftIcon = WIcon})
 
 --Laneclear
-Menu.Laneclear:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
+Menu.Laneclear:MenuElement({id = "UseQ", name = "Use Q", value = false, leftIcon = QIcon})
 --Menu.Laneclear:MenuElement({id = "UseQM", name = "Use Q MEGA", value = true, leftIcon = QMIcon})
 --Menu.Laneclear:MenuElement({id = "UseW", name = "Use W MEGA", value = true, leftIcon = WIcon})
 
 --Lashit
-Menu.Lasthit:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
+Menu.Lasthit:MenuElement({id = "UseQ", name = "Use Q", value = false, leftIcon = QIcon})
 --Menu.Lasthit:MenuElement({id = "UseQM", name = "Use QM", value = true, leftIcon = QIcon})
 --Menu.Lasthit:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = QIcon})
 
@@ -703,7 +703,7 @@ function Harass()
 	OrbState("Global", true)
 
 	if Game.CanUseSpell(0) == 0 then
-		if Menu.Harass.UseQ:Value() and not Buffed(H, "gnartransform") and not Buffed(H, "gnartransformsoon") then
+		if Menu.Harass.UseQ:Value() and not Buffed(H, "gnartransform") then
 			local target = Target(Q.range, "damage")
 			if target == nil then return end
 			if DistTo(target.pos, H.pos) <= Q.range and H.attackData.state ~= 2 then
