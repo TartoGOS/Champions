@@ -2,7 +2,6 @@ if myHero.charName ~= "Gnar" then return end
 
 require 'Eternal Prediction'
 require 'DamageLib'
-require 'MapPositionGOS'
 
 class "Gnar"
 
