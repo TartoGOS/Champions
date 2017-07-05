@@ -43,8 +43,8 @@ Menu:MenuElement({id = "Lasthit", name = "Lasthit", type = MENU})
 --Menu:MenuElement({id = "Flee", name = "Flee", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
 Menu:MenuElement({id = "UseQauto", name = "Auto stack Q (not recommended)", value = false, leftIcon = QIcon})
-Menu:MenuElement({id = "AccuracyQ", name = "Q1 Hitchance", value = 0.15, min = 0.01, max = 1, step = 0.01})
-Menu:MenuElement({id = "AccuracyQ3", name = "Q3 Hitchance", value = 0.15, min = 0.01, max = 1, step = 0.01})
+Menu:MenuElement({id = "AccuracyQ", name = "Q1 Hitchance", value = 0.1, min = 0.01, max = 1, step = 0.01})
+Menu:MenuElement({id = "AccuracyQ3", name = "Q3 Hitchance", value = 0.12, min = 0.01, max = 1, step = 0.01})
 
 Menu:MenuElement({name = "Version : 1.0", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE})
@@ -82,6 +82,7 @@ function Tick()
 	AATick()
 	AutoUlt()
 	CheckMode()
+	AutoQ()
 end
 
 function AATick()
@@ -653,6 +654,27 @@ function AbleE(target)
 			end
 		end
 	else return false
+	end
+end
+
+function AutoQ()
+	if Game.Timer() < 91 or not Menu.UseQauto:Value() then return end
+	if customQvalid ~= 0 then
+		if Game.Timer() - customQvalid <= 0.4 then return end
+	end
+	if customQ3valid ~= 0 then
+		if Game.Timer() - customQ3valid <= 0.5 then return end
+	end
+	if customEvalid ~= 0 then
+		if Game.Timer() - customEvalid <= 0.5 then return end
+	end
+	if Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" then
+		for i = 0, Game.MinionCount() do
+			local minion = Game.Minion(i)
+			if DistTo(minion.pos, H.pos) < Q.range and H.attackData.state ~= 2 then
+				CastX(0, minion, Menu.AccuracyQ:Value())
+			end
+		end
 	end
 end
 
