@@ -320,11 +320,10 @@ function CastX(spell, target, hitchance, minion, hero)
 				if prediction and prediction.hitChance >= Custom.hitchance and prediction:hCollision() == Custom.hero and not target.dead and (Game.Timer() - castXtick) > 1 then
 					if H.attackData.state == 2 then return end
 					mLocation = mousePos
-					local MM = prediction.castPos:ToMM()
 					if mLocation == nil then return end
 					DelayAction(function() OrbState("Movement", false) end, Custom.delay)
 					if target ~= nil then
-						DelayAction(function() Control.SetCursorPos(MM.x, MM.y) end, Custom.delay)
+						DelayAction(function() Control.SetCursorPos(prediction.castPos) end, Custom.delay)
 						DelayAction(function() Control.KeyDown(Custom.hotkey) end, Custom.delay)
 						DelayAction(function() Control.KeyUp(Custom.hotkey) end, Custom.delay)
 						customWvalid = Game.Timer()
@@ -713,7 +712,6 @@ end
 
 
 function Combo()
-	if myHero:GetSpellData(3).name == "JhinRShot" then return end
 	if H.activeSpell.valid then return end
 	if customWvalid ~= 0 then
 		if Game.Timer() - customWvalid <= 0.75 then return end
@@ -783,19 +781,15 @@ function Combo()
 end
 
 function Harass()
-	if myHero:GetSpellData(3).name == "JhinRShot" then return end
-	if Game.Timer() < 91 then return end
+	if H.activeSpell.valid or Game.Timer() < 91 then return end
 	Force(nil)
 	ForceMove(nil)
-	if H.activeSpell.valid then return end
 	castXstate = 1
 	OrbState("Global", true)
 end
 
 function Laneclear()
-	if myHero:GetSpellData(3).name == "JhinRShot" then return end
-	if Game.Timer() < 91 then return end
-	if H.activeSpell.valid then return end
+	if H.activeSpell.valid or Game.Timer() < 91 then return end
 	castXstate = 1
 	OrbState("Global", true)
 	Force(nil)
@@ -803,9 +797,7 @@ function Laneclear()
 end
 
 function Jungleclear()
-	if myHero:GetSpellData(3).name == "JhinRShot" then return end
-	if Game.Timer() < 91 then return end
-	if H.activeSpell.valid then return end
+	if H.activeSpell.valid or Game.Timer() < 91 then return end
 	Force(nil)
 	ForceMove(nil)
 	castXstate = 1
@@ -813,9 +805,7 @@ function Jungleclear()
 end
 
 function Lasthit()
-	if myHero:GetSpellData(3).name == "JhinRShot" then return end
-	if Game.Timer() < 91 then return end
-	if H.activeSpell.valid then return end
+	if H.activeSpell.valid or Game.Timer() < 91 then return end
 	Force(nil)
 	ForceMove(nil)
 	castXstate = 1
@@ -835,10 +825,9 @@ function Lasthit()
 end
 
 function Flee()
-	if myHero:GetSpellData(3).name == "JhinRShot" then return end
+	if H.activeSpell.valid or Game.Timer() < 91 then return end
 	Force(nil)
 	ForceMove(nil)
-	if H.activeSpell.valid then return end
 	OrbState("Movement", true)
 	OrbState("Attack", false)
 end
