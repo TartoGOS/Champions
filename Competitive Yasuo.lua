@@ -31,7 +31,7 @@ local customQ3valid = 0
 local customWvalid = 0
 local customEvalid = 0
 local customRvalid = 0
-local AA = {Up = 0, Down = 0}
+local AA = {Up = 0, Down = 0, range = 305}
 
 print("Competitive Yasuo Loaded !")
 
@@ -46,13 +46,14 @@ Menu:MenuElement({id = "UseQauto", name = "Auto stack Q (not recommended)", valu
 Menu:MenuElement({id = "AccuracyQ", name = "Q1 Hitchance", value = 0.1, min = 0.01, max = 1, step = 0.01})
 Menu:MenuElement({id = "AccuracyQ3", name = "Q3 Hitchance", value = 0.12, min = 0.01, max = 1, step = 0.01})
 
-Menu:MenuElement({name = "Version : 1.0", type = SPACE})
+Menu:MenuElement({name = "Version : 1.05", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE})
 
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
 Menu.Combo:MenuElement({id = "UseQ3", name = "Use Q3", value = true, leftIcon = Q3Icon})
 Menu.Combo:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = EIcon})
 Menu.Combo:MenuElement({id = "UseAIR", name = "Use R", value = true, leftIcon = RIcon})
+Menu.Combo:MenuElement({id = "UseAIRtype", name = "R type (1= 100% R, 2=moreDPS)", value = 1, min = 1, max = 2, step = 1, leftIcon = RIcon})
 Menu.Combo:MenuElement({id = "MiniR", name = "Minimum enemies to cast R", value = 1, min = 1, max = 5, step = 1, leftIcon = RIcon})
 --Harass
 Menu.Harass:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
@@ -107,20 +108,328 @@ end
 function AutoUlt()
 	if _G.SDK then
 		if _G.SDK.Orbwalker.Modes[_G.SDK.ORBWALKER_MODE_COMBO] then
-			if Menu.Combo.UseAIR:Value() and Game.CanUseSpell(3) == 0 and CanUlt() then
+			if Menu.Combo.UseAIR:Value() and Menu.Combo.UseAIRtype:Value() == 1 and Game.CanUseSpell(3) == 0 and CanUlt() then
 				local target = Target(R.range, "damage")
 				if target == nil then return end
-				if H.attackData.state ~= 2 then
+				if Buffed(target, "YasuoQ3Mis") and H:GetSpellData(0).name ~= "YasuoQ3W" and DistTo(target.pos, H.pos) < Q.range and Game.CanUseSpell(0) == 0 then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + Q.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay )
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						elseif check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime ))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + Q.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay )
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						elseif check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime ))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif Buffed(target, "YasuoQ3Mis") and H:GetSpellData(0).name == "YasuoQ3W" and DistTo(target.pos, H.pos) < Q3.range and Game.CanUseSpell(0) == 0 then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + Q3.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q3.delay )
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + Q3.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q3.delay )
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif Buffed(target, "YasuoQ3Mis") and DistTo(target.pos, H.pos) < AA.range then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay )
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime ))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif H.attackData.state ~= 2 then
+					Control.CastSpell(HK_R)
+				end
+			elseif Menu.Combo.UseAIR:Value() and Menu.Combo.UseAIRtype:Value() == 2 and Game.CanUseSpell(3) == 0 and CanUlt() then
+				local target = Target(R.range, "damage")
+				if target == nil then return end
+				if Buffed(target, "YasuoQ3Mis") and H:GetSpellData(0).name ~= "YasuoQ3W" and DistTo(target.pos, H.pos) < Q.range and Game.CanUseSpell(0) == 0 then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + Q.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay + ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						elseif check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + Q.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay + ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						elseif check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif Buffed(target, "YasuoQ3Mis") and H:GetSpellData(0).name == "YasuoQ3W" and DistTo(target.pos, H.pos) < Q3.range and Game.CanUseSpell(0) == 0 then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + Q3.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q3.delay + ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + Q3.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q3.delay + ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif Buffed(target, "YasuoQ3Mis") and DistTo(target.pos, H.pos) < AA.range then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay + ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif H.attackData.state ~= 2 then
 					Control.CastSpell(HK_R)
 				end
 			end
 		end
 	elseif EOWLoaded then
 		if EOW:Mode() == 1 then
-			if Menu.Combo.UseAIR:Value() and Game.CanUseSpell(3) == 0 and CanUlt() then
+			if Menu.Combo.UseAIR:Value() and Menu.Combo.UseAIRtype:Value() == 1 and Game.CanUseSpell(3) == 0 and CanUlt() then
 				local target = Target(R.range, "damage")
 				if target == nil then return end
-				if H.attackData.state ~= 2 then
+				if Buffed(target, "YasuoQ3Mis") and H:GetSpellData(0).name ~= "YasuoQ3W" and DistTo(target.pos, H.pos) < Q.range and Game.CanUseSpell(0) == 0 then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + Q.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay )
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						elseif check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime ))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + Q.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay )
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						elseif check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime ))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif Buffed(target, "YasuoQ3Mis") and H:GetSpellData(0).name == "YasuoQ3W" and DistTo(target.pos, H.pos) < Q3.range and Game.CanUseSpell(0) == 0 then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + Q3.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q3.delay )
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + Q3.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q3.delay )
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif Buffed(target, "YasuoQ3Mis") and DistTo(target.pos, H.pos) < AA.range then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay )
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime ))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif H.attackData.state ~= 2 then
+					Control.CastSpell(HK_R)
+				end
+			elseif Menu.Combo.UseAIR:Value() and Menu.Combo.UseAIRtype:Value() == 2 and Game.CanUseSpell(3) == 0 and CanUlt() then
+				local target = Target(R.range, "damage")
+				if target == nil then return end
+				if Buffed(target, "YasuoQ3Mis") and H:GetSpellData(0).name ~= "YasuoQ3W" and DistTo(target.pos, H.pos) < Q.range and Game.CanUseSpell(0) == 0 then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + Q.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay + ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						elseif check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + Q.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay + ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						elseif check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif Buffed(target, "YasuoQ3Mis") and H:GetSpellData(0).name == "YasuoQ3W" and DistTo(target.pos, H.pos) < Q3.range and Game.CanUseSpell(0) == 0 then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + Q3.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q3.delay + ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + Q3.delay + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q3.delay + ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif Buffed(target, "YasuoQ3Mis") and DistTo(target.pos, H.pos) < AA.range then
+					local check = BuffedReturn(target, "YasuoQ3Mis")
+					if H.attackData.state ~= 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping*5 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_Q, target) end, (((Game.Timer() - AA.Up) - H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() Control.CastSpell(HK_R, target) end, Q.delay + ping)
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					elseif H.attackData.state == 2 then
+						if check.expireTime > (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping*4 + 0.2) then
+							OrbState("Movement", false)
+							Force(target)
+							DelayAction(function() Control.CastSpell(HK_R, target) end, (((Game.Timer() - AA.Up) - H.attackData.windUpTime + H.attackData.windDownTime) + H.attackData.windUpTime + ping))
+							DelayAction(function() OrbState("Global", true) end, ping)
+						end
+					end
+				elseif H.attackData.state ~= 2 then
 					Control.CastSpell(HK_R)
 				end
 			end
@@ -161,7 +470,7 @@ end
 function Draws()
 	if H.dead then return end
 	if Menu.Drawings.DrawAuto:Value() then
-		Draw.Circle(H.pos, 305, 2, ColorZ)
+		Draw.Circle(H.pos, AA.range, 2, ColorZ)
 	end
 	if Menu.Drawings.DrawQ:Value() then
 		Draw.Circle(H.pos, Q.range, 2, ColorY)
@@ -588,6 +897,24 @@ function Buffed(target, buffname)
 	end
 end
 
+function BuffedReturn(target, buffname)
+	if target == nil then return end
+	local t = {}
+ 	for i = 0, target.buffCount do
+    	local buff = target:GetBuff(i)
+    	if buff.count > 0 then
+      		table.insert(t, buff)
+    	end
+  	end
+  	if t ~= nil then
+  		for i, buff in pairs(t) do
+			if buff.name == buffname and buff.expireTime > 0 then
+				return buff
+			end
+		end
+	end
+end
+
 function CanUlt()
 	local count = 0
 	for i = 0, Game.HeroCount() do
@@ -642,6 +969,8 @@ end
 
 function AbleE(target)
 	if target == nil then return end
+	if DistTo(target.pos, H.pos) < Q3.range and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name == "YasuoQ3W" then return false end
+	if DistTo(target.pos, H.pos) < Q.range and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" then return false end
 	if Menu.Combo.UseE:Value() and Game.CanUseSpell(2) == 0 then
 		if DistTo(target.pos, H.pos) < E.range and DistTo(target.pos, H.pos) >= 220 then
 			return true
@@ -679,6 +1008,7 @@ function AutoQ()
 end
 
 function Combo()
+	--YasuoDashWrapper
 	if Game.Timer() >= 91 or not H.activeSpell.valid then 
 		if customQvalid ~= 0 then
 			if Game.Timer() - customQvalid <= 0.4 then return end
@@ -694,7 +1024,7 @@ function Combo()
 		castXstate = 1
 		OrbState("Global", true)
 
-		local target = Target(305, "damage")
+		local target = Target(AA.range, "damage")
 
 		if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" then
 			target = Target(Q.range, "damage")
@@ -703,11 +1033,18 @@ function Combo()
 			if H.attackData.state ~= 2 and not AbleE(target) then
 				CastX(0, target, Menu.AccuracyQ:Value())
 			elseif H.attackData.state ~= 2 and AbleE(target) then
-				if DistTo(target.pos, H.pos) > E.range and DistTo(target.pos, H.pos) <= 1000 and TurretEnemyAround(1300) == 0 then
+				if DistTo(target.pos, H.pos) > E.range and DistTo(target.pos, H.pos) <= 1500 and TurretEnemyAround(1300) == 0 then
 					for i = 0, Game.MinionCount() do
 						local minion = Game.Minion(i)
 						if minion.isEnemy and DistTo(minion.pos, H.pos) < DistTo(target.pos, H.pos) and DistTo(minion.pos, target.pos) < DistTo(target.pos, H.pos)  and DistTo(minion.pos, H.pos) < E.range then
 							Control.CastSpell(HK_E, minion)
+						else
+							for i = 0, Game.MinionCount() do
+								local minion2 = Game.Minion(i)
+								if minion2.isEnemy and DistTo(minion2.pos, H.pos) < DistTo(target.pos, H.pos) and DistTo(minion2.pos, target.pos) < DistTo(target.pos, H.pos) and DistTo(minion2.pos, minion.pos) then
+									Control.CastSpell(HK_E, minion)
+								end
+							end
 						end
 					end
 				end
@@ -718,8 +1055,8 @@ function Combo()
 			if target == nil then return end
 			if H.attackData.state ~= 2 and not AbleE(target) then
 				CastX(1, target, Menu.AccuracyQ3:Value())
-			if H.attackData.state ~= 2 and AbleE(target) then
-				elseif DistTo(target.pos, H.pos) > E.range and DistTo(target.pos, H.pos) <= 1500 and TurretEnemyAround(1300) == 0 then
+			elseif H.attackData.state ~= 2 and AbleE(target) then
+				if DistTo(target.pos, H.pos) > E.range and DistTo(target.pos, H.pos) <= 1500 and TurretEnemyAround(1300) == 0 then
 					for i = 0, Game.MinionCount() do
 						local minion = Game.Minion(i)
 						if minion.isEnemy and DistTo(minion.pos, H.pos) < DistTo(target.pos, H.pos) and DistTo(minion.pos, target.pos) < DistTo(target.pos, H.pos) and DistTo(minion.pos, H.pos) < E.range then
@@ -738,7 +1075,7 @@ function Combo()
 		elseif Menu.Combo.UseE:Value() and Game.CanUseSpell(2) == 0 then
 			target = Target(E.range, "damage")
 			if target == nil then return end
-			if H.attackData.state ~= 2 and DistTo(target.pos, H.pos) < E.range and TurretEnemyAround(1300) == 0 then
+			if H.attackData.state ~= 2 and DistTo(target.pos, H.pos) < E.range and DistTo(target.pos, H.pos) > 150 and TurretEnemyAround(1300) == 0 and not Buffed(target, "YasuoDashWrapper") then
 				Control.CastSpell(HK_E, target)
 			end
 		end
