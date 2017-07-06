@@ -726,9 +726,11 @@ function Combo()
 		end
 	end
 	if Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
-		local target = Target(W.range, "easy")
-		local target2 = Target(Q.range, "easy")
-		if target2 == nil then return end
+		local target1 = Target(W.range, "easy")
+		local target = Target(Q.range, "easy")
+		if target == nil then 
+			target = target1
+		end
 		if target ~= nil then
 			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+160) and not EnemyComing(target, 30) and EnemiesAround(1700) < 3 then
 				if H.attackData.state ~= 2 then
@@ -889,12 +891,14 @@ function Laneclear()
 						Force(nil)
 						return
 					end
-					if H.team == 100 and target.charName == "SRU_ChaosMinionSiege" then
-						Force(target)
-						break
-					elseif H.team == 200 and target.charName == "SRU_OrderMinionSiege" then
-						Force(target)
-						break
+					if MinionNumber(50, "melee", target) > 1 or MinionNumber(50, "ranged", target) > 1 or MinionNumber(50, "siege", target) > 1 then--changed
+						if H.team == 100 and target.charName == "SRU_ChaosMinionSiege" then
+							Force(target)
+							break
+						elseif H.team == 200 and target.charName == "SRU_OrderMinionSiege" then
+							Force(target)
+							break
+						end
 					end
 				end
 			end
