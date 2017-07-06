@@ -726,11 +726,8 @@ function Combo()
 		end
 	end
 	if Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
-		local target1 = Target(W.range, "easy")
 		local target = Target(Q.range, "easy")
-		if target == nil then 
-			target = target1
-		end
+		if target == nil then target = Target(W.range, "easy") end
 		if target ~= nil then
 			if math.sqrt(DistTo(target.pos, H.pos)) <= W.range and math.sqrt(DistTo(target.pos, H.pos)) > (QRange()+160) and not EnemyComing(target, 30) and EnemiesAround(1700) < 3 then
 				if H.attackData.state ~= 2 then
@@ -753,7 +750,7 @@ function Combo()
 					CastX(1, target, 0.15)
 				end
 			end
-		end
+		else return end
 	end
 
 	if Menu.Combo.UseE:Value() and Game.CanUseSpell(2) == 0 and (H.mana*100)/H.maxMana >= Menu.Combo.UseEMana:Value() then
