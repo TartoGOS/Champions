@@ -5,6 +5,22 @@ require 'DamageLib'
 
 class "Yasuo"
 
+--lasthit E priority___done
+--Damages calculatiosn E et Q
+--R sur tout knockup___done
+--rework le E sur creep pour chase___done
+--killsteal E, Q
+--Utiliser moins E si plein d'ennemis
+--laneclear, si pas de creep à finir et Q en cd, utiliser E quand meme___done
+--Botrk usage
+--Fin de hourglass prevoir trajectoire
+--E tourelle check selon position___done
+--flee
+--insta R si sur le point de mourir
+--delay R pour eviter de spammer pendant ulti
+--Si creeps autour cible, Stacker E sur creeps avant de E l'ennemi pour les 50% de damages
+--Angle pour E chase
+
 local Q = {range = 550, delay = 0.4, speed = math.huge, width = 20}
 local Q3 = {range = 1150, delay = 0.5, speed = 1500, width, 90}
 --local W = {range = 2550, delay = 0.75, speed = 5000, width = }
@@ -40,20 +56,21 @@ Menu:MenuElement({id = "Combo", name = "Combo", type = MENU})
 Menu:MenuElement({id = "Harass", name = "Harass", type = MENU})
 Menu:MenuElement({id = "Laneclear", name = "Laneclear", type = MENU})
 Menu:MenuElement({id = "Lasthit", name = "Lasthit", type = MENU})
---Menu:MenuElement({id = "Flee", name = "Flee", type = MENU})
+Menu:MenuElement({id = "Killsteal", name = "Lasthit", type = MENU})
+Menu:MenuElement({id = "Flee", name = "Flee", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
 Menu:MenuElement({id = "UseQauto", name = "Auto stack Q (not recommended)", value = false, leftIcon = QIcon})
 Menu:MenuElement({id = "AccuracyQ", name = "Q1 Hitchance", value = 0.1, min = 0.01, max = 1, step = 0.01})
 Menu:MenuElement({id = "AccuracyQ3", name = "Q3 Hitchance", value = 0.12, min = 0.01, max = 1, step = 0.01})
 
-Menu:MenuElement({name = "Version : 1.05", type = SPACE})
+Menu:MenuElement({name = "Version : 1.10", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE})
 
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
 Menu.Combo:MenuElement({id = "UseQ3", name = "Use Q3", value = true, leftIcon = Q3Icon})
 Menu.Combo:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = EIcon})
 Menu.Combo:MenuElement({id = "UseAIR", name = "Use R", value = true, leftIcon = RIcon})
-Menu.Combo:MenuElement({id = "UseAIRtype", name = "R type (1= 100% R, 2=moreDPS)", value = 1, min = 1, max = 2, step = 1, leftIcon = RIcon})
+Menu.Combo:MenuElement({id = "UseAIRtype", name = "R type (1= 100% R, 2=moreDPS)", value = 2, min = 1, max = 2, step = 1, leftIcon = RIcon})
 Menu.Combo:MenuElement({id = "MiniR", name = "Minimum enemies to cast R", value = 1, min = 1, max = 5, step = 1, leftIcon = RIcon})
 --Harass
 Menu.Harass:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
@@ -64,18 +81,24 @@ Menu.Laneclear:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon 
 Menu.Laneclear:MenuElement({id = "UseQ3", name = "Use Q3", value = true, leftIcon = Q3Icon})
 Menu.Laneclear:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = EIcon})
 
---Lashit
+--Lasthit
 Menu.Lasthit:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
 Menu.Lasthit:MenuElement({id = "UseQ3", name = "Use Q3", value = true, leftIcon = Q3Icon})
 Menu.Lasthit:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = EIcon})
 
+--Killsteal
+Menu.Killsteal:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
+Menu.Killsteal:MenuElement({id = "UseQ3", name = "Use Q3", value = true, leftIcon = Q3Icon})
+Menu.Killsteal:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = EIcon})
+
 --Flee
---Menu.Flee:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = EIcon})
+Menu.Flee:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = EIcon})
 
 --Drawings
 Menu.Drawings:MenuElement({id = "DrawAuto", name = "Draw AA Range", value = true, leftIcon = HeroIcon})
 Menu.Drawings:MenuElement({id = "DrawQ", name = "Draw Q Range", value = true, leftIcon = QIcon})
 Menu.Drawings:MenuElement({id = "DrawQ3", name = "Draw Q3 Range", value = true, leftIcon = Q3Icon})
+Menu.Drawings:MenuElement({id = "DrawE", name = "Draw E Range", value = true, leftIcon = EIcon})
 Menu.Drawings:MenuElement({id = "DrawR", name = "Draw R Range", value = true, leftIcon = RIcon})
 
 function Tick()
@@ -478,6 +501,9 @@ function Draws()
 	if Menu.Drawings.DrawQ3:Value() then
 		Draw.Circle(H.pos, Q3.range, 2, ColorY)
 	end
+	if Menu.Drawings.DrawE:Value() then
+		Draw.Circle(H.pos, E.range, 2, ColorY)
+	end
 	if Menu.Drawings.DrawR:Value() then
 		Draw.Circle(H.pos, R.range, 2, ColorY)
 	end
@@ -785,11 +811,11 @@ function Force(target)
 	end
 end
 
-function TurretEnemyAround(range)
+function TurretEnemyAround(range, position)
 	local count = 0
 	for i = 0, Game.TurretCount() do
 		local turret = Game.Turret(i)
-		if turret.isEnemy and DistTo(turret.pos, H.pos) <= range then
+		if turret.isEnemy and DistTo(turret.pos, position) <= range then
 			count = count + 1
 		end
 	end
@@ -909,7 +935,15 @@ function BuffedReturn(target, buffname)
   	if t ~= nil then
   		for i, buff in pairs(t) do
 			if buff.name == buffname and buff.expireTime > 0 then
-				return buff
+				if buff == nil then
+					return
+				else
+					return buff
+				end
+			elseif buffname == "YasuoQ3Mis" then
+				if buff.type == (29 or 30) and buff.expireTime > 0 then
+					return buff
+				end
 			end
 		end
 	end
@@ -931,6 +965,11 @@ function CanUlt()
   			if t ~= nil then
   				for i, buff in pairs(t) do
 					if buff.name == "YasuoQ3Mis" and buff.expireTime > 0 then
+						count = count +1
+						if count >= Menu.Combo.MiniR:Value() then
+							return true
+						end
+					elseif buff.type == (29 or 30) and buff.expireTime > 0 then
 						count = count +1
 						if count >= Menu.Combo.MiniR:Value() then
 							return true
@@ -967,24 +1006,48 @@ function ForceSteal()
 	--
 end
 
-function AbleE(target)
-	if target == nil then return end
-	if DistTo(target.pos, H.pos) < Q3.range and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name == "YasuoQ3W" then return false end
-	if DistTo(target.pos, H.pos) < Q.range and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" then return false end
-	if Menu.Combo.UseE:Value() and Game.CanUseSpell(2) == 0 then
-		if DistTo(target.pos, H.pos) < E.range and DistTo(target.pos, H.pos) >= 220 then
-			return true
-		elseif DistTo(target.pos, H.pos) > E.range and DistTo(target.pos, H.pos) <= 1000 then
-			for i = 0, Game.MinionCount() do
-				local minion = Game.Minion(i)
-				if DistTo(minion.pos, H.pos) < DistTo(target.pos, H.pos) and DistTo(minion.pos, target.pos) < DistTo(target.pos, H.pos) then
-					return true
+function AbleEChase()
+	for i = 0, Game.HeroCount() do
+		local target = Game.Hero(i)
+		if DistTo(target.pos, H.pos) < Q.range and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" then return false end
+		if Menu.Combo.UseE:Value() and Game.CanUseSpell(2) == 0 then
+			if DistTo(target.pos, H.pos) > E.range and DistTo(target.pos, H.pos) <= 1500 then
+				for i = 0, Game.MinionCount() do
+					local minion = Game.Minion(i)
+					if minion.isEnemy and DistTo(minion.pos, H.pos) < DistTo(target.pos, H.pos) and DistTo(minion.pos, target.pos) < DistTo(target.pos, H.pos) and DistTo(minion.pos, H.pos) < E.range then
+						for i = 0, Game.MinionCount() do
+							local minion2 = Game.Minion(i)
+							if minion2.isEnemy and DistTo(minion2.pos, H.pos) < DistTo(target.pos, H.pos) and DistTo(minion2.pos, target.pos) < DistTo(target.pos, H.pos) and DistTo(minion2.pos, target.pos) < (E.range + 100) then
+								return true
+							end
+						end
+					end
 				end
 			end
 		end
-	else return false
 	end
+	return false
 end
+
+--[[function MinionNext(minion, target)
+	if minion == nil or target == nil then return end
+	for i = 0, Game.MinionCount()
+		local minion2 = Game.Minion(i)
+		if minion2.isEnemy and DistTo(minion2.pos, minion.pos) < (E.range + 50) and DistTo(minion2.pos, H.pos) < DistTo(hero.pos, H.pos) and DistTo(minion2.pos, hero.pos) < DistTo(hero.pos, H.pos) then
+
+
+			for i = 0, Game.HeroCount() do
+					local hero = Game.Hero(i)
+					if hero.isEnemy and not hero.dead and DistTo(hero.pos, H.pos) <= 1800 then
+						for i = 0, Game.MinionCount() do
+							local minion = Game.Minion(i)
+							if minion.isEnemy and DistTo(minion.pos, H.pos) < E.range and DistTo(minion.pos, H.pos) < DistTo(hero.pos, H.pos) and DistTo(minion.pos, hero.pos) < DistTo(hero.pos, H.pos) then
+								Control.CastSpell(HK_E, minion)
+							end
+						end
+					end
+				end]]
+
 
 function AutoQ()
 	if Game.Timer() < 91 or not Menu.UseQauto:Value() then return end
@@ -1009,6 +1072,7 @@ end
 
 function Combo()
 	--YasuoDashWrapper
+	--YasuoDashScalar
 	if Game.Timer() >= 91 or not H.activeSpell.valid then 
 		if customQvalid ~= 0 then
 			if Game.Timer() - customQvalid <= 0.4 then return end
@@ -1024,76 +1088,61 @@ function Combo()
 		castXstate = 1
 		OrbState("Global", true)
 
-		local target = Target(AA.range, "damage")
+		local target = Target(1500, "damage")
+		if target == nil then return end
 
-		if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" then
-			target = Target(Q.range, "damage")
-			if target == nil then target = Target(1500, "damage") return end
-			if target == nil then return end
-			if H.attackData.state ~= 2 and not AbleE(target) then
+		if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" and DistTo(target.pos, H.pos) < Q.range then
+			if H.attackData.state ~= 2 and DistTo(target.pos, H.pos) < Q.range then
 				CastX(0, target, Menu.AccuracyQ:Value())
-			elseif H.attackData.state ~= 2 and AbleE(target) then
-				if DistTo(target.pos, H.pos) > E.range and DistTo(target.pos, H.pos) <= 1500 and TurretEnemyAround(1300) == 0 then
-					for i = 0, Game.MinionCount() do
-						local minion = Game.Minion(i)
-						if minion.isEnemy and DistTo(minion.pos, H.pos) < DistTo(target.pos, H.pos) and DistTo(minion.pos, target.pos) < DistTo(target.pos, H.pos)  and DistTo(minion.pos, H.pos) < E.range then
-							Control.CastSpell(HK_E, minion)
-						else
-							for i = 0, Game.MinionCount() do
-								local minion2 = Game.Minion(i)
-								if minion2.isEnemy and DistTo(minion2.pos, H.pos) < DistTo(target.pos, H.pos) and DistTo(minion2.pos, target.pos) < DistTo(target.pos, H.pos) and DistTo(minion2.pos, minion.pos) then
-									Control.CastSpell(HK_E, minion)
-								end
-							end
-						end
-					end
-				end
+				return
 			end
-		elseif Menu.Combo.UseQ3:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name == "YasuoQ3W" then
-			target = Target(Q.range, "damage")
-			if target == nil then target = Target(1500, "damage") return end
-			if target == nil then return end
-			if H.attackData.state ~= 2 and not AbleE(target) then
+		elseif Menu.Combo.UseQ3:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name == "YasuoQ3W" and DistTo(target.pos, H.pos) < Q3.range then
+			if H.attackData.state ~= 2 and DistTo(target.pos, H.pos) < Q3.range then
 				CastX(1, target, Menu.AccuracyQ3:Value())
-			elseif H.attackData.state ~= 2 and AbleE(target) then
-				if DistTo(target.pos, H.pos) > E.range and DistTo(target.pos, H.pos) <= 1500 and TurretEnemyAround(1300) == 0 then
-					for i = 0, Game.MinionCount() do
-						local minion = Game.Minion(i)
-						if minion.isEnemy and DistTo(minion.pos, H.pos) < DistTo(target.pos, H.pos) and DistTo(minion.pos, target.pos) < DistTo(target.pos, H.pos) and DistTo(minion.pos, H.pos) < E.range then
+				return
+			end
+		elseif Menu.Combo.UseE:Value() and Game.CanUseSpell(2) == 0 and DistTo(target.pos, H.pos) < E.range then
+			if target == nil then return end
+			if H.attackData.state ~= 2 and DistTo(target.pos, H.pos) < E.range and DistTo(target.pos, H.pos) > 150 and not Buffed(target, "YasuoDashWrapper") then
+				local distanceSup = 500 - DistTo(target.pos, H.pos)
+				local new = H.pos:Extended(target.pos, distanceSup)
+				if new == nil then return end
+				if TurretEnemyAround(800, new.pos) == 0 then
+					Control.CastSpell(HK_E, target)
+					return
+				end
+			end
+		elseif Menu.Combo.UseE:Value() and Game.CanUseSpell(2) == 0 and DistTo(target.pos, H.pos) < 1500 then
+			if H.attackData.state ~= 2 then
+				for i = 0, Game.MinionCount() do
+					local minion = Game.Minion(i)
+					if minion.isEnemy and DistTo(minion.pos, H.pos) <= E.range and DistTo(minion.pos, H.pos) < DistTo(target.pos, H.pos) and DistTo(minion.pos, target.pos) < DistTo(target.pos, H.pos) then
+						local distanceSup = 500 - DistTo(minion.pos, H.pos)
+						local new = H.pos:Extended(minion.pos, distanceSup)
+						if new == nil then return end
+						if minion.pos:AngleBetween(H.pos, target.pos) < 135 or minion.pos:AngleBetween(H.pos, target.pos) > 225 then return end
+						if TurretEnemyAround(800, new.pos) == 0 then
 							Control.CastSpell(HK_E, minion)
-						else
-							for i = 0, Game.MinionCount() do
-								local minion2 = Game.Minion(i)
-								if minion2.isEnemy and DistTo(minion2.pos, H.pos) < DistTo(target.pos, H.pos) and DistTo(minion2.pos, target.pos) < DistTo(target.pos, H.pos) and DistTo(minion2.pos, minion.pos) then
-									Control.CastSpell(HK_E, minion)
-								end
-							end
+							return
 						end
 					end
 				end
 			end
-		elseif Menu.Combo.UseE:Value() and Game.CanUseSpell(2) == 0 then
-			target = Target(E.range, "damage")
-			if target == nil then return end
-			if H.attackData.state ~= 2 and DistTo(target.pos, H.pos) < E.range and DistTo(target.pos, H.pos) > 150 and TurretEnemyAround(1300) == 0 and not Buffed(target, "YasuoDashWrapper") then
-				Control.CastSpell(HK_E, target)
-			end
-		end
+		end		
 	else
 		if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" then
 			target = Target(Q.range, "damage")
 			if target == nil then return end
 			if H.attackData.state ~= 2 then
 				CastX(0, target, Menu.AccuracyQ:Value())
+				return
 			end
 		elseif Menu.Combo.UseQ3:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name == "YasuoQ3W" then
 			target = Target(Q3.range, "damage")
 			if target == nil then return end
 			if H.attackData.state ~= 2 then
 				CastX(1, target, Menu.AccuracyQ3:Value())
-			end
-			if Menu.Combo.UseAIR:Value() and Game.CanUseSpell(3) == 0 and Buffed(target, "YasuoQ3Mis") then
-				Control.CastSpell(HK_R, target)
+				return
 			end
 		end
 	end
@@ -1146,35 +1195,68 @@ function Laneclear()
 	castXstate = 1
 	OrbState("Global", true)
 
-	if Menu.Laneclear.UseQ:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" then
-		for i = 0, Game.MinionCount() do
-			local minion = Game.Minion(i)
+	for i = 0, Game.MinionCount() do
+		local minion = Game.Minion(i)
+		if minion == nil then return end
+		if Menu.Laneclear.UseE:Value() and Game.CanUseSpell(2) == 0 then
 			if minion == nil then return end
+			local distanceSup = 500 - DistTo(minion.pos, H.pos)
+			local new = H.pos:Extended(minion.pos, distanceSup)
+			if new == nil then return end
+			if TurretEnemyAround(800, new.pos) == 0 then
+				local t = {}
+				local hihi, buff = 0, nil
+ 				for i = 0, H.buffCount do
+    				buff = H:GetBuff(i)
+    				if buff.count > 0 then
+      					table.insert(t, buff)
+    				end
+  				end
+  				if t ~= nil then
+  					for i, buff in pairs(t) do
+						if buff.name == "YasuoDashScalar" and buff.expireTime > 0 then
+							hihi = 1
+						end
+					end
+				end
+				if hihi ~= 1 then
+					if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < E.range and minion.health < getdmg("E", minion, H) then
+						Control.CastSpell(HK_E, minion)
+					end
+				elseif hihi == 1 then
+					if buff.count == 1 then
+						if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < E.range and minion.health < (getdmg("E", minion, H)*1.25) then
+							Control.CastSpell(HK_E, minion)
+						end
+					elseif buff.count == 2 then
+						if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < E.range and minion.health < (getdmg("E", minion, H)*1.5) then
+							Control.CastSpell(HK_E, minion)
+						end
+					end
+				elseif minion.isEnemy and H.attackData ~= 2 and DistTo(minion.pos, H.pos) < E.range and Game.CanUseSpell(0) ~= 0 then
+					for i = 0, Game.MinionCount() do
+						local minion2 = Game.Minion(i)
+						if minion == nil then return end
+						if minion.isEnemy and HealthPred(minion, E.delay + ping + 0.1) then
+							return
+						else
+							Control.CastSpell(HK_E, minion)
+						end
+					end
+				end
+			end
+		end
+		if Menu.Laneclear.UseQ:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" then
 			if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < Q.range then
 				OrbState("Global", true)
 				CastX(0, minion, 0.075)
-				break
 			end
-		end
-	elseif Menu.Laneclear.UseQ3:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name == "YasuoQ3W" then
-		for i = 0, Game.MinionCount() do
+		elseif Menu.Laneclear.UseQ3:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name == "YasuoQ3W" then
 			local minion = Game.Minion(i)
 			if minion == nil then return end
 			if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < Q3.range then
 				OrbState("Global", true)
 				CastX(1, minion, 0.075)
-				break
-			end
-		end
-	end
-	if Menu.Laneclear.UseE:Value() and Game.CanUseSpell(2) == 0 and TurretEnemyAround(1300) == 0 then
-		for i = 0, Game.MinionCount() do
-			local minion = Game.Minion(i)
-			if minion == nil then return end
-			if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < E.range and minion.health < getdmg("E", minion, H) then
-				OrbState("Global", true)
-				Control.CastSpell(HK_E, minion)
-				break
 			end
 		end
 	end
@@ -1200,29 +1282,54 @@ function Lasthit()
 	castXstate = 1
 	OrbState("Global", true)
 
-	if Menu.Lasthit.UseQ:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" then
-		for i = 0, Game.MinionCount() do
-			local minion = Game.Minion(i)
+	for i = 0, Game.MinionCount() do
+		local minion = Game.Minion(i)
+		if minion == nil then return end
+		if Menu.Lasthit.UseE:Value() and Game.CanUseSpell(2) == 0 then
 			if minion == nil then return end
+			local distanceSup = 500 - DistTo(minion.pos, H.pos)
+			local new = H.pos:Extended(minion.pos, distanceSup)
+			if new == nil then return end
+			if TurretEnemyAround(800, new.pos) == 0 then
+				local t = {}
+				local hihi, buff = 0, nil
+ 				for i = 0, H.buffCount do
+    				buff = H:GetBuff(i)
+    				if buff.count > 0 then
+    					table.insert(t, buff)
+    				end
+  				end
+  				if t ~= nil then
+  					for i, buff in pairs(t) do
+						if buff.name == "YasuoDashScalar" and buff.expireTime > 0 then
+							hihi = 1
+						end
+					end
+				end
+				if hihi ~= 1 then
+					if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < E.range and minion.health < getdmg("E", minion, H) then
+						Control.CastSpell(HK_E, minion)
+					end
+				elseif hihi == 1 then
+					if buff.count == 1 then
+						if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < E.range and minion.health < (getdmg("E", minion, H)*1.25) then
+							Control.CastSpell(HK_E, minion)
+						end
+					elseif buff.count == 2 then
+						if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < E.range and minion.health < (getdmg("E", minion, H)*1.5) then
+							Control.CastSpell(HK_E, minion)
+						end
+					end
+				end
+			end
+		end
+		if Menu.Lasthit.UseQ:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name ~= "YasuoQ3W" then
 			if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < Q.range and minion.health < getdmg("Q", minion, H) then
 				CastX(0, minion, Menu.AccuracyQ:Value())
 			end
-		end
-	elseif Menu.Lasthit.UseQ3:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name == "YasuoQ3W" then
-		for i = 0, Game.MinionCount() do
-			local minion = Game.Minion(i)
-			if minion == nil then return end
+		elseif Menu.Lasthit.UseQ3:Value() and Game.CanUseSpell(0) == 0 and H:GetSpellData(0).name == "YasuoQ3W" then
 			if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < Q3.range and minion.health < getdmg("Q", minion, H) then
 				CastX(1, minion, Menu.AccuracyQ3:Value())
-			end
-		end
-	end
-	if Menu.Lasthit.UseE:Value() and Game.CanUseSpell(2) == 0 and TurretEnemyAround(1300) == 0 then
-		for i = 0, Game.MinionCount() do
-			local minion = Game.Minion(i)
-			if minion == nil then return end
-			if minion.isEnemy and H.attackData.state ~= 2 and DistTo(minion.pos, H.pos) < E.range and minion.health < getdmg("E", minion, H) then
-				Control.CastSpell(HK_E, minion)
 			end
 		end
 	end
@@ -1240,15 +1347,14 @@ function Flee()
 	if customEvalid ~= 0 then
 		if Game.Timer() - customEvalid <= 0.25 then return end
 	end 
-	Force(nil)
 	ForceMove(nil)
-	castXstate = 1
 	OrbState("Global", true)
-	local cucur = mousePos
+	print("lol")
 
 	if Menu.Flee.UseE:Value() and Game.CanUseSpell(2) == 0 then
 		for i = 0, Game.MinionCount() do
 			local minion = Game.Minion(i)
+			local cucur = mousePos
 			if minion == nil then return end
 			print("non")
 			if minion.isEnemy and DistTo(minion.pos, H.pos) < DistTo(cucur, H.pos) and DistTo(minion.pos, cucur) < DistTo(cucur, H.pos) and DistTo(minion.pos, H.pos) < E.range then
