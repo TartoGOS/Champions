@@ -57,7 +57,7 @@ Menu:MenuElement({id = "Harass", name = "Harass", type = MENU})
 Menu:MenuElement({id = "Laneclear", name = "Laneclear", type = MENU})
 Menu:MenuElement({id = "Lasthit", name = "Lasthit", type = MENU})
 Menu:MenuElement({id = "Killsteal", name = "Lasthit", type = MENU})
-Menu:MenuElement({id = "Flee", name = "Flee", type = MENU})
+--Menu:MenuElement({id = "Flee", name = "Flee", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
 Menu:MenuElement({id = "UseQauto", name = "Auto stack Q (not recommended)", value = false, leftIcon = QIcon})
 Menu:MenuElement({id = "AccuracyQ", name = "Q1 Hitchance", value = 0.1, min = 0.01, max = 1, step = 0.01})
@@ -92,7 +92,7 @@ Menu.Killsteal:MenuElement({id = "UseQ3", name = "Use Q3", value = true, leftIco
 Menu.Killsteal:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = EIcon})
 
 --Flee
-Menu.Flee:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = EIcon})
+--Menu.Flee:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = EIcon})
 
 --Drawings
 Menu.Drawings:MenuElement({id = "DrawAuto", name = "Draw AA Range", value = true, leftIcon = HeroIcon})
