@@ -699,7 +699,7 @@ function Combo()
 	Force(nil)
 	castXstate = 1
 	OrbState("Global", true)
-	if EnemiesAround(655) == 0 then
+	if EnemiesAround(655) == 0 and Menu.Combo.UseQ:Value() then
 		if H:GetSpellData(0).toggleState == 1 and Game.CanUseSpell(0) == 0  then 
 			if H.attackData.state == 1 then
 				OrbState("Global", true)
