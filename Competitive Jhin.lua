@@ -96,7 +96,7 @@ Menu.Lasthit:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = 
 Menu.Lasthit:MenuElement({id = "UseQMana", name = "Q Mana min", value = 40, min = 0, max = 100, step = 5, leftIcon = QIcon})
 Menu.Lasthit:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = WIcon})
 Menu.Lasthit:MenuElement({id = "UseWMana", name = "W Mana min", value = 40, min = 0, max = 100, step = 5, leftIcon = WIcon})
---Killsteal/AutoCC
+
 --Drawings
 Menu.Drawings:MenuElement({id = "DrawAuto", name = "Draw AA Range", value = true, leftIcon = HeroIcon})
 Menu.Drawings:MenuElement({id = "DrawQ", name = "Draw Q Range", value = true, leftIcon = QIcon})
@@ -712,106 +712,113 @@ end
 
 
 function Combo()
-	if H.activeSpell.valid then return end
-	if customWvalid ~= 0 then
-		if Game.Timer() - customWvalid <= 0.75 then return end
-	end
-	if customEvalid ~= 0 then
-		if Game.Timer() - customEvalid <= 0.25 then return end
-	end
-	Force(nil)
-	ForceMove(nil)
-	castXstate = 1
-	OrbState("Global", true)
-
-	if Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
-		local target = Target(W.range, "damage")
-		if target == nil then return end
-		if Buffed(target, "jhinespotteddebuff") and DistTo(target.pos, H.pos) > 750 then
-			if EnemiesAround(300) >= 1 or EnemiesCloseCanAttack(680) >= 2 then return end
-			if H.attackData.state ~= 2 then
-				OrbState("Global", true)
-				CastX(1, target, Menu.Accuracy:Value())
-			end
-		elseif Buffed(target, "jhinespotteddebuff") and DistTo(target.pos, H.pos) < 350 and DistTo(target.pos, H.pos) > 150 and H.attackData.state == 3 and Game.CanUseSpell(0) ~= 0 then
-			if EnemiesCloseCanAttack(680) >= 2 then return end
-			if H.attackData.state ~= 2 then
-				OrbState("Global", true)
-				CastX(1, target, Menu.Accuracy:Value())
-			end
-		elseif DistTo(target.pos, H.pos) > 680 and EnemiesAround(500) == 0 and Menu.Combo.UseWKs:Value() then
-			if (target.health + target.shieldAD + target.shieldAP) < getdmg("W", target, myHero) then
+	if Game.Timer() >= 91 or not H.activeSpell.valid then
+		if customWvalid ~= 0 then
+			if Game.Timer() - customWvalid <= 0.75 then return end
+		end
+		if customEvalid ~= 0 then
+			if Game.Timer() - customEvalid <= 0.25 then return end
+		end
+		Force(nil)
+		ForceMove(nil)
+		castXstate = 1
+		OrbState("Global", true)
+		if Menu.Combo.UseW:Value() and Game.CanUseSpell(1) == 0 then
+			local target = Target(W.range, "damage")
+			if target == nil then return end
+			if Buffed(target, "jhinespotteddebuff") and DistTo(target.pos, H.pos) > 750 then
+				if EnemiesAround(300) >= 1 or EnemiesCloseCanAttack(680) >= 2 then return end
 				if H.attackData.state ~= 2 then
 					OrbState("Global", true)
 					CastX(1, target, Menu.Accuracy:Value())
 				end
+			elseif Buffed(target, "jhinespotteddebuff") and DistTo(target.pos, H.pos) < 350 and DistTo(target.pos, H.pos) > 150 and H.attackData.state == 3 and Game.CanUseSpell(0) ~= 0 then
+				if EnemiesCloseCanAttack(680) >= 2 then return end
+				if H.attackData.state ~= 2 then
+					OrbState("Global", true)
+					CastX(1, target, Menu.Accuracy:Value())
+				end
+			elseif DistTo(target.pos, H.pos) > 680 and EnemiesAround(500) == 0 and Menu.Combo.UseWKs:Value() then
+				if (target.health + target.shieldAD + target.shieldAP) < getdmg("W", target, myHero) then
+					if H.attackData.state ~= 2 then
+						OrbState("Global", true)
+						CastX(1, target, Menu.Accuracy:Value())
+					end
+				end
 			end
 		end
-	end
-	if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 then
-		local target = Target(Q.range, "damage")
-		if Buffed(target, "jhinpassiveattackbuff") then return end
-		if target == nil then return end
-		if H.attackData.state ~= 2 then
+		if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 then
+			local target = Target(Q.range, "damage")
+			if Buffed(target, "jhinpassiveattackbuff") then return end
+			if target == nil then return end
+			if H.attackData.state ~= 2 then
+				OrbState("Global", true)
+				CastX(4, target, Menu.Accuracy:Value())
+			end
+		end
+		if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 and Buffed(H, "JhinPassiveReload") then
+			local target = Target(Q.range, "damage")
+			if target == nil then return end
 			OrbState("Global", true)
 			CastX(4, target, Menu.Accuracy:Value())
 		end
-	end
-	if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 and Buffed(H, "JhinPassiveReload") then
-		local target = Target(Q.range, "damage")
-		if target == nil then return end
-		OrbState("Global", true)
-		CastX(4, target, Menu.Accuracy:Value())
-	end
 
-	if Game.CanUseSpell(0) ~= 0 and Game.CanUseSpell(1) ~= 0 then
-		if Menu.Combo.UseE:Value() and Menu.Combo.UseEMana:Value() < (100*H.mana/H.maxMana) and Game.CanUseSpell(2) == 0 then
-			if myHero.activeSpell.valid then return end
-			local target = Target(750, "damage")
-			if Buffed(target, "jhinpassiveattackbuff") or H.hudAmmo == 1 then return end
-			if target == nil then return end
-			if HealthPred(target, 0.85) < (target.health*100)/target.maxHealth or CCed(H, 10) then return end
-			if (Game.Timer() - AAUp) < ((H.attackData.windDownTime)*0.6) then return end
-			if H.attackData.state ~= 2 then
-				OrbState("Global", true)
-				CastX(2, target, Menu.Accuracy:Value())
+		if Game.CanUseSpell(0) ~= 0 and Game.CanUseSpell(1) ~= 0 then
+			if Menu.Combo.UseE:Value() and Menu.Combo.UseEMana:Value() < (100*H.mana/H.maxMana) and Game.CanUseSpell(2) == 0 then
+				if myHero.activeSpell.valid then return end
+				local target = Target(750, "damage")
+				if Buffed(target, "jhinpassiveattackbuff") or H.hudAmmo == 1 then return end
+				if target == nil then return end
+				if HealthPred(target, 0.85) < (target.health*100)/target.maxHealth or CCed(H, 10) then return end
+				if (Game.Timer() - AAUp) < ((H.attackData.windDownTime)*0.6) then return end
+				if H.attackData.state ~= 2 then
+					OrbState("Global", true)
+					CastX(2, target, Menu.Accuracy:Value())
+				end
+			end
+		end
+	else
+		if Menu.Combo.UseQ:Value() and Game.CanUseSpell(0) == 0 then
+			local target = Target(Q.range, "damage")
+			if H.attackData.state ~= 2 and not Buffed(target, "jhinpassiveattackbuff") then
+				CastX(4, target, Menu.Accuracy:Value())
 			end
 		end
 	end
 end
 
 function Harass()
-	if H.activeSpell.valid or Game.Timer() < 91 then return end
+	--[[if H.activeSpell.valid or Game.Timer() < 91 then return end
 	Force(nil)
 	ForceMove(nil)
 	castXstate = 1
-	OrbState("Global", true)
+	OrbState("Global", true)]]
 end
 
 function Laneclear()
-	if H.activeSpell.valid or Game.Timer() < 91 then return end
+	--[[if H.activeSpell.valid or Game.Timer() < 91 then return end
 	castXstate = 1
 	OrbState("Global", true)
 	Force(nil)
-	ForceMove(nil)
+	ForceMove(nil)]]
 end
 
 function Jungleclear()
-	if H.activeSpell.valid or Game.Timer() < 91 then return end
+	--[[if H.activeSpell.valid or Game.Timer() < 91 then return end
 	Force(nil)
 	ForceMove(nil)
 	castXstate = 1
-	OrbState("Global", true)
+	OrbState("Global", true)]]
 end
 
 function Lasthit()
-	if H.activeSpell.valid or Game.Timer() < 91 then return end
+	--[[if H.activeSpell.valid or Game.Timer() < 91 then return end
 	Force(nil)
 	ForceMove(nil)
 	castXstate = 1
 	OrbState("Global", true)
 
-	--[[if Menu.Lasthit.UseQ:Value() and Game.CanUseSpell(0) == 0 then
+	if Menu.Lasthit.UseQ:Value() and Game.CanUseSpell(0) == 0 then
 		if Menu.Lasthit.UseQMana:Value() < (100*H.mana/H.maxMana) and H.attackData.state == 3 then
 			for i = 0, Game.MinionCount() do
 				local minion = Game.Minion(i)
@@ -825,11 +832,11 @@ function Lasthit()
 end
 
 function Flee()
-	if H.activeSpell.valid or Game.Timer() < 91 then return end
+	--[[if H.activeSpell.valid or Game.Timer() < 91 then return end
 	Force(nil)
 	ForceMove(nil)
 	OrbState("Movement", true)
-	OrbState("Attack", false)
+	OrbState("Attack", false)]]
 end
 
 Callback.Add("Tick", function() Tick() end)
