@@ -68,7 +68,7 @@ Menu.Killsteal:MenuElement({id = "UseW", name = "Use W", value = false, leftIcon
 --Drawings
 Menu.Drawings:MenuElement({id = "DrawAuto", name = "Draw AA Range", value = true, leftIcon = HeroIcon})
 Menu.Drawings:MenuElement({id = "DrawQ", name = "Draw Q Range", value = true, leftIcon = QIcon})
-Menu.Drawings:MenuElement({id = "DrawW", name = "Draw W Range", value = true, leftIcon = EIcon})
+Menu.Drawings:MenuElement({id = "DrawW", name = "Draw W Range", value = true, leftIcon = WIcon})
 Menu.Drawings:MenuElement({id = "DrawR", name = "Draw R Range", value = true, leftIcon = RIcon})
 
 function Tick()
