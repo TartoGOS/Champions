@@ -21,7 +21,7 @@ local ESet = Prediction:SetSpell(E, TYPE_LINE, true)
 local RSet = Prediction:SetSpell(R, TYPE_LINE, true)
 local customEvalid = 0
 local customRvalid = 0
-local AA = {Up = 0, Down = 0, range = 550, BuffedUp = 0, BuffedDown = 0}
+local AA = {Up = 0, Down = 0, range = 680, BuffedUp = 0, BuffedDown = 0}
 
 print("Competitive Draven Loaded !")
 
