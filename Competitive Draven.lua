@@ -49,7 +49,7 @@ Menu.Combo:MenuElement({id = "UseWgrab", name = "Use W to grab Q", value = false
 Menu.Combo:MenuElement({id = "WMana", name = "Mana mini to W", value = 40, min = 0, max = 100, step = 5, leftIcon = WIcon})
 Menu.Combo:MenuElement({id = "UseE", name = "Use E", value = true, leftIcon = EIcon})
 Menu.Combo:MenuElement({id = "UseEgp", name = "Use E gapcloser", value = false, leftIcon = EIcon})
-Menu.Combo:MenuElement({id = "UseR", name = "Use R BURST", value = false, leftIcon = RIcon})
+Menu.Combo:MenuElement({id = "UseUltimate", name = "Use R BURST", value = false, leftIcon = RIcon})
 Menu.Combo:MenuElement({id = "RPress", name = "Semi-Auto R ", key = string.byte("Y"), leftIcon = RIcon})
 
 --Harass
@@ -139,7 +139,7 @@ function Combo()
 				CastX(0, target, Menu.AccuracyE:Value())
 			end
 		end
-		if Menu.Combo.UseR:Value() and Game.CanUseSpell(3) == 0 and Qstate() == 1 then
+		if Menu.Combo.UseUltimate:Value() and Game.CanUseSpell(3) == 0 and Qstate() == 1 then
 			if distance <= AA.range and Game.CanUseSpell(2) ~= 0 then
 				CastX(1, target, Menu.AccuracyR:Value())
 			end
