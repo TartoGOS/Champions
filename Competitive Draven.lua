@@ -22,6 +22,7 @@ local RSet = Prediction:SetSpell(R, TYPE_LINE, true)
 local customEvalid = 0
 local customRvalid = 0
 local AA = {Up = 0, Down = 0, range = 680, BuffedUp = 0, BuffedDown = 0}
+local particle = nil
 
 print("Competitive Draven Loaded !")
 
@@ -36,13 +37,13 @@ Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
 Menu:MenuElement({id = "AccuracyE", name = "E Hitchance", value = 0.12, min = 0.01, max = 1, step = 0.01})
 Menu:MenuElement({id = "AccuracyR", name = "R Hitchance", value = 0.12, min = 0.01, max = 1, step = 0.01})
 
-Menu:MenuElement({name = "Version : 1.0", type = SPACE})
+Menu:MenuElement({name = "Version : 1.05", type = SPACE})
 Menu:MenuElement({name = "By Tarto", type = SPACE})
 
 --Combo
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
 Menu.Combo:MenuElement({id = "UseQgrab", name = "Grab Q [not fully working]", value = false, leftIcon = QIcon})
-Menu.Combo:MenuElement({id = "UseQgrabRange", name = "Grab Q Range", value = 150, min = 50, max = 350, step = 5, leftIcon = QIcon})
+Menu.Combo:MenuElement({id = "UseQgrabRange", name = "Grab Q Range", value = 150, min = 50, max = 500, step = 5, leftIcon = QIcon})
 Menu.Combo:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = WIcon})
 Menu.Combo:MenuElement({id = "UseWOften", name = "Use W for Attack Speed Buff", value = false, leftIcon = WIcon})
 Menu.Combo:MenuElement({id = "UseWgrab", name = "Use W to grab Q", value = false, leftIcon = WIcon})
@@ -221,11 +222,19 @@ function Flee()
 	--
 end
 
+function particlecheck()
+	if particle ~= nil then
+		if particle.name == "Draven_Base_Q_ReticleCatchSuccess" then
+			EnableAll()
+		end
+	end
+end
+
 function particleglobal()
 	if H.activeSpell.valid or CheckSpellValid() then return end
 
 	for i = 0, Game.ParticleCount() do
-		local particle = Game.Particle(i)
+		particle = Game.Particle(i)
 		local particlePos = particle.pos
 		local distancem = math.sqrt(DistTo(particlePos, mousePos))
 		local distanceh = math.sqrt(DistTo(particlePos, H.pos))
@@ -233,8 +242,13 @@ function particleglobal()
 			if distancem <= Menu.Combo.UseQgrabRange:Value() then
 				if Menu.Combo.UseQgrab:Value()  and Game.CanUseSpell(1) == 0 then
 					ForceMove(particlePos)
-					if Menu.Combo.UseWgrab:Value() and Menu.Combo.WMana:Value() < 100*H.mana/H.maxMana then
-						Control.CastSpell(HK_W)
+					if H.attackData.state ~= 2 and distanceh > 10 then
+						OrbState("Attack", false)
+						if Menu.Combo.UseWgrab:Value() and Menu.Combo.WMana:Value() < 100*H.mana/H.maxMana then
+							Control.CastSpell(HK_W)
+						end
+					else
+						EnableAll()
 					end
 				elseif Menu.Harass.UseQgrab:Value() then
 					ForceMove(particlePos)
@@ -253,8 +267,7 @@ function particleglobal()
 					end
 				end
 			end
-		end
-		if distanceh < 100 and particle.name == "Draven_Base_Q_ReticleCatchSuccess.troy" then
+		elseif particle.name == "Draven_Base_Q_ReticleCatchSuccess" then
 			EnableAll()
 		end
 	end
@@ -265,18 +278,16 @@ end
 
 	for i = 0, Game.MissileCount() do
 		local axe = Game.Missile(i)
-		local axePos = H.missileData.endPos
-		local distancem = math.sqrt(DistTo(axePos, mousePos))
-		local distanceh = math.sqrt(DistTo(axePos, H.pos))
-		if axe.name == "DravenSpinningReturn" or "DravenSpinningReturnCatch" then
-			if Menu.Combo.UseQgrab:Value() and distancem <= Menu.Combo.UseQgrabRange:Value() and distanceh > 80  then
+		if axe.name == "DravenSpinningReturnCatch" then
+			local axePos = axe.missileData.endPos
+			local distancem = math.sqrt(DistTo(axePos, mousePos))
+			local distanceh = math.sqrt(DistTo(axePos, H.pos))
+			if Menu.Combo.UseQgrab:Value() and distancem <= Menu.Combo.UseQgrabRange:Value() then
 				ForceMove(axePos)
 				if Menu.Combo.UseWgrab:Value() and Game.CanUseSpell(1) == 0 and Menu.Combo.WMana:Value() < 100*H.mana/H.maxMana then
 					Control.CastSpell(HK_W)
 				end
 			end
-		else
-			EnableAll()
 		end
 	end
 end]]
