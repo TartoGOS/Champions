@@ -230,25 +230,27 @@ function particleglobal()
 		local distancem = math.sqrt(DistTo(particlePos, mousePos))
 		local distanceh = math.sqrt(DistTo(particlePos, H.pos))
 		if particle.name == "Draven_Base_Q_reticle.troy" and distanceh <= 1000 then
-			if Menu.Combo.UseQgrab:Value() and distancem <= Menu.Combo.UseQgrabRange:Value()  then
-				ForceMove(particlePos)
-				if Menu.Combo.UseWgrab:Value() and Game.CanUseSpell(1) == 0 and Menu.Combo.WMana:Value() < 100*H.mana/H.maxMana then
-					Control.CastSpell(HK_W)
-				end
-			elseif Menu.Harass.UseQgrab:Value() and distancem <= Menu.Combo.UseQgrabRange:Value()  then
-				ForceMove(particlePos)
-				if Menu.Combo.UseWgrab:Value() and Game.CanUseSpell(1) == 0 and Menu.Combo.WMana:Value() < 100*H.mana/H.maxMana then
-					Control.CastSpell(HK_W)
-				end
-			elseif Menu.Lasthit.UseQgrab:Value() and distancem <= Menu.Combo.UseQgrabRange:Value()  then
-				ForceMove(particlePos)
-				if Menu.Combo.UseWgrab:Value() and Game.CanUseSpell(1) == 0 and Menu.Combo.WMana:Value() < 100*H.mana/H.maxMana then
-					Control.CastSpell(HK_W)
-				end
-			elseif Menu.Laneclear.UseQgrab:Value() and distancem <= Menu.Combo.UseQgrabRange:Value()  then
-				ForceMove(particlePos)
-				if Menu.Combo.UseWgrab:Value() and Game.CanUseSpell(1) == 0 and Menu.Combo.WMana:Value() < 100*H.mana/H.maxMana then
-					Control.CastSpell(HK_W)
+			if distancem <= Menu.Combo.UseQgrabRange:Value() then
+				if Menu.Combo.UseQgrab:Value() then
+					ForceMove(particlePos)
+					if Menu.Combo.UseWgrab:Value() and Game.CanUseSpell(1) == 0 and Menu.Combo.WMana:Value() < 100*H.mana/H.maxMana then
+						Control.CastSpell(HK_W)
+					end
+				elseif Menu.Harass.UseQgrab:Value() then
+					ForceMove(particlePos)
+					if Menu.Combo.UseWgrab:Value() and Game.CanUseSpell(1) == 0 and Menu.Combo.WMana:Value() < 100*H.mana/H.maxMana then
+						Control.CastSpell(HK_W)
+					end
+				elseif Menu.Lasthit.UseQgrab:Value() then
+					ForceMove(particlePos)
+					if Menu.Combo.UseWgrab:Value() and Game.CanUseSpell(1) == 0 and Menu.Combo.WMana:Value() < 100*H.mana/H.maxMana then
+						Control.CastSpell(HK_W)
+					end
+				elseif Menu.Laneclear.UseQgrab:Value() then
+					ForceMove(particlePos)
+					if Menu.Combo.UseWgrab:Value() and Game.CanUseSpell(1) == 0 and Menu.Combo.WMana:Value() < 100*H.mana/H.maxMana then
+						Control.CastSpell(HK_W)
+					end
 				end
 			end
 		end
