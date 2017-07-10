@@ -373,10 +373,10 @@ function CastX(spell, target, hitchance, minion, hero)
 						DelayAction(function() Control.KeyDown(Custom.hotkey) end, Custom.delay)
 						DelayAction(function() Control.KeyUp(Custom.hotkey) end, Custom.delay)
 						customQvalid = Game.Timer()
-						DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay*0.3 + Custom.delay))
+						DelayAction(function() Control.SetCursorPos(mLocation) end, (Custom.Delay*0.25 + Custom.delay))
 						castXstate = 1
 						castXtick = Game.Timer()
-						DelayAction(function() OrbState("Global", true) end, (Custom.Delay*0.3 + Custom.delay))
+						DelayAction(function() OrbState("Global", true) end, (Custom.Delay*0.25 + Custom.delay))
 					end
 				end
 			elseif Custom.spell == 1 then
