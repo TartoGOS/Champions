@@ -75,7 +75,7 @@ Menu:MenuElement({id = "KsW", name = "Use W to Killsteal", value = false, leftIc
 Menu:MenuElement({id = "AutoW", name = "Use W Auto on CC", value = false, leftIcon = WIcon})
 Menu:MenuElement({id = "Accuracy", name = "Skillshot Hitchance", value = 0.15, min = 0.01, max = 1, step = 0.01})
 Menu:MenuElement({name = "Version : 1.10", type = SPACE})
-Menu:MenuElement({name = "By Tarto", type = SPACE})
+Menu:MenuElement({name = "By Zoso", type = SPACE})
 --Combo
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
 Menu.Combo:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = WIcon})
