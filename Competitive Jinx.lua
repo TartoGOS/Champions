@@ -71,7 +71,7 @@ Menu:MenuElement({id = "ESet", name = "E Settings", type = MENU})
 Menu:MenuElement({id = "Items", name = "Items usage", type = MENU})
 Menu:MenuElement({id = "Drawings", name = "Drawings", type = MENU})
 Menu:MenuElement({name = "Version : 1.30", type = SPACE})
-Menu:MenuElement({name = "By Tarto", type = SPACE, rightIcon = Tarto})
+Menu:MenuElement({name = "By Zoso", type = SPACE, rightIcon = Tarto})
 --Combo
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
 Menu.Combo:MenuElement({id = "UseW", name = "Use W", value = true, leftIcon = WIcon})
