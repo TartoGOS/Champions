@@ -38,7 +38,7 @@ Menu:MenuElement({id = "AccuracyE", name = "E Hitchance", value = 0.12, min = 0.
 Menu:MenuElement({id = "AccuracyR", name = "R Hitchance", value = 0.12, min = 0.01, max = 1, step = 0.01})
 
 Menu:MenuElement({name = "Version : 1.05", type = SPACE})
-Menu:MenuElement({name = "By Tarto", type = SPACE})
+Menu:MenuElement({name = "By Zoso", type = SPACE})
 
 --Combo
 Menu.Combo:MenuElement({id = "UseQ", name = "Use Q", value = true, leftIcon = QIcon})
